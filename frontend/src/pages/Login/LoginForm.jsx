@@ -1,18 +1,23 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
+import { FaEye, FaEyeSlash, FaApple } from "react-icons/fa"
+import { FcGoogle } from "react-icons/fc"
 import "./login.css"
-import logo from "../../assets/logo/logo.png"
 
 function LoginForm() {
   const navigate = useNavigate()
 
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
-
   const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordField, setShowPasswordField] = useState(false)
 
   const handleLogin = async () => {
+    if (!password.trim()) {
+      alert("Please enter your password.")
+      return
+    }
+
     try {
       const res = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
@@ -55,75 +60,118 @@ function LoginForm() {
     }
   }
 
+  const handleContinue = () => {
+    if (!identifier.trim()) {
+      alert("Please enter your email or mobile number.")
+      return
+    }
+    setShowPasswordField(true)
+  }
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      if (!showPasswordField) {
+        handleContinue()
+      } else {
+        handleLogin()
+      }
+    }
+  }
 
   return (
-
     <div className="login-form">
+      <h2 className="login-title">Log in or sign up</h2>
 
-      <h2 className="login-title">Log into Zenora</h2>
+      {!showPasswordField ? (
+        <>
+          {/* IDENTIFIER FIELD */}
+          <div className="input-group-custom">
+            <input
+              type="text"
+              placeholder="Enter your email or mobile number"
+              className="input-field-custom"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              onKeyDown={handleKeyPress}
+            />
+          </div>
 
-      {/* EMAIL FIELD */}
-      <input
-        type="text"
-        placeholder="Email or Username"
-        className="input-field"
-        value={identifier}
-        onChange={(e) => setIdentifier(e.target.value)}
-      />
+          {/* CONTINUE BUTTON */}
+          <button
+            className={`continue-btn ${identifier.trim() ? "active" : ""}`}
+            onClick={handleContinue}
+            disabled={!identifier.trim()}
+          >
+            Continue
+          </button>
+        </>
+      ) : (
+        <>
+          {/* SELECTED IDENTIFIER BACK LINK */}
+          <div className="selected-identifier-row">
+            <span className="selected-identifier-text">{identifier}</span>
+            <button className="change-btn" onClick={() => setShowPasswordField(false)}>
+              Change
+            </button>
+          </div>
 
-      {/* PASSWORD FIELD */}
-      <div className="password-wrapper">
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-          className="input-field"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          {/* PASSWORD FIELD */}
+          <div className="password-wrapper-custom">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              className="input-field-custom password-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={handleKeyPress}
+              autoFocus
+            />
+            <span
+              className="eye-icon-custom"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            </span>
+          </div>
 
-        <span
-          className="eye-icon"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? <FaEye /> : <FaEyeSlash />}
-        </span>
-
-      </div>
-
-      <button className="login-button" onClick={handleLogin}>
-        Log in
-      </button>
-      {/* FORGOT PASSWORD LINK */}
-      <p className="forgot-password">
-        Forgot password?
-      </p>
+          {/* LOGIN BUTTON */}
+          <button
+            className={`continue-btn ${password.trim() ? "active" : ""}`}
+            onClick={handleLogin}
+            disabled={!password.trim()}
+          >
+            Log in
+          </button>
+        </>
+      )}
 
       {/* DIVIDER */}
-      <div className="divider">
-        <span>OR</span>
-      </div>
+      <div className="form-divider">or</div>
 
-      {/*login with google*/}
+      {/* SOCIAL LOGINS */}
       <button
-        className="google-login"
+        className="social-btn"
         onClick={() => {
           window.location.href = "http://localhost:8080/auth/google/login"
         }}
       >
+        <span className="google-icon-wrapper">
+          <FcGoogle className="google-icon" />
+        </span>
         Continue with Google
       </button>
 
-      {/*Create Account*/}
       <button
-        className="create-account"
-        onClick={() => navigate("/register")}
+        className="social-btn"
+        onClick={() => {
+          alert("Apple Sign-In is integrated and coming soon! 🚀")
+        }}
       >
-        Create New Account
+        <FaApple className="apple-icon" />
+        Continue with Apple
       </button>
-
     </div>
   )
-
 }
 
 export default LoginForm
