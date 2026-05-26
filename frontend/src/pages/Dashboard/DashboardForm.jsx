@@ -23,7 +23,7 @@ function DashboardForm() {
       }
 
       try {
-        const res = await fetch(`http://localhost:8080/api/dashboard?t=${Date.now()}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard?t=${Date.now()}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,7 +62,7 @@ function DashboardForm() {
     
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/ml/override", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ml/override`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +89,7 @@ function DashboardForm() {
     const token = localStorage.getItem("token");
     if (!goalEditModal.amount || !goalEditModal.date) return;
     try {
-      const res = await fetch("http://localhost:8080/api/goals/update", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/goals/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -113,7 +113,7 @@ function DashboardForm() {
     if (!window.confirm("Are you sure you want to delete this transaction? Operations and analytics will automatically rebalance.")) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/activity/delete", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/delete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

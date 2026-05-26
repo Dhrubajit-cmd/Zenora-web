@@ -30,16 +30,16 @@ function TransactionsPage() {
     let payload = {};
 
     if (activeTab === "expense") {
-      endpoint = "http://localhost:8080/api/expenses";
+      endpoint = `${import.meta.env.VITE_API_URL}/api/expenses`;
       payload = { amount: parseFloat(amount), description: description };
     } else if (activeTab === "income") {
-      endpoint = "http://localhost:8080/api/incomes";
+      endpoint = `${import.meta.env.VITE_API_URL}/api/incomes`;
       payload = { amount: parseFloat(amount), source: description };
     } else if (activeTab === "investment") {
-      endpoint = "http://localhost:8080/api/investments";
+      endpoint = `${import.meta.env.VITE_API_URL}/api/investments`;
       payload = { amount: parseFloat(amount), asset_type: description };
     } else if (activeTab === "goal") {
-      endpoint = "http://localhost:8080/api/goals";
+      endpoint = `${import.meta.env.VITE_API_URL}/api/goals`;
       payload = { target_amount: parseFloat(amount), goal_name: description, target_date: targetDate };
     }
 

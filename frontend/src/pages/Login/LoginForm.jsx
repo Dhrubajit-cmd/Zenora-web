@@ -21,7 +21,7 @@ function LoginForm() {
 
     setLoading(true)
     try {
-      const res = await fetch("http://localhost:5050/send-otp", {
+      const res = await fetch(`${import.meta.env.VITE_OTP_URL}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: identifier.trim() })
@@ -37,7 +37,7 @@ function LoginForm() {
       }
     } catch (err) {
       console.error("Error sending OTP:", err)
-      alert("Connection error trying to reach OTP Server (Port 5050).")
+      alert("Connection error trying to reach OTP Server.")
     } finally {
       setLoading(false)
     }
@@ -53,7 +53,7 @@ function LoginForm() {
     setLoading(true)
     try {
       // 1. Verify OTP with Node Server (Port 5050)
-      const verifyRes = await fetch("http://localhost:5050/verify-otp", {
+      const verifyRes = await fetch(`${import.meta.env.VITE_OTP_URL}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: identifier.trim(), otp: otp.trim() })
@@ -63,7 +63,7 @@ function LoginForm() {
 
       if (verifyData.verified) {
         // 2. Obtain JWT Token from Go Backend (Port 8080)
-        const loginRes = await fetch("http://localhost:8080/auth/otp-login", {
+        const loginRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/otp-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: identifier.trim() })
@@ -170,7 +170,7 @@ function LoginForm() {
       <button
         className="social-btn"
         onClick={() => {
-          window.location.href = "http://localhost:8080/auth/google/login"
+          window.location.href = `${import.meta.env.VITE_API_URL}/auth/google/login`
         }}
       >
         <span className="google-icon-wrapper">

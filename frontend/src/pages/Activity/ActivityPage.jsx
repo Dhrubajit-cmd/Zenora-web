@@ -19,7 +19,7 @@ function ActivityPage() {
       }
 
       try {
-        const res = await fetch(`http://localhost:8080/api/activity?t=${Date.now()}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity?t=${Date.now()}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -53,7 +53,7 @@ function ActivityPage() {
     
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/ml/override", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ml/override`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

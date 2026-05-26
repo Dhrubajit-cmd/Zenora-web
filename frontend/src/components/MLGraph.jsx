@@ -16,7 +16,7 @@ function MLGraph() {
       setLastDate("");
       setLastExpense("");
 
-      const res = await fetch("http://localhost:5001/plot", {
+      const res = await fetch(`${import.meta.env.VITE_ML_URL}/plot`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +48,7 @@ function MLGraph() {
 
   const handleRetrain = async () => {
     try {
-      await fetch("http://localhost:5001/retrain", {
+      await fetch(`${import.meta.env.VITE_ML_URL}/retrain`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
