@@ -45,6 +45,7 @@ func main() {
 
 	http.HandleFunc("/auth/register", auth.RegisterHandler)
 	http.HandleFunc("/auth/login", auth.LoginHandler)
+	http.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
 	http.HandleFunc("/api/profile", middleware.AuthMiddleware(auth.ProfileHandler))
 	http.HandleFunc("/api/dashboard", middleware.AuthMiddleware(dashboard.DashboardHandler))
 	mux := http.NewServeMux()
@@ -52,6 +53,7 @@ func main() {
 	//  Auth routes
 	mux.HandleFunc("/auth/register", auth.RegisterHandler)
 	mux.HandleFunc("/auth/login", auth.LoginHandler)
+	mux.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
 
 	//  Google OAuth
 	mux.HandleFunc("/auth/google/login", auth.GoogleLoginHandler)

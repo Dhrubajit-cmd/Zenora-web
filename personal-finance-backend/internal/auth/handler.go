@@ -91,6 +91,45 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+type OTPLoginRequest struct {
+	Email string `json:"email"`
+}
+
+func OTPLoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req OTPLoginRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	user, err := repository.GetUserByEmailOrUsername(req.Email)
+	if err != nil {
+		http.Error(w, "User not found. Please sign up.", http.StatusNotFound)
+		return
+	}
+
+	token, err := GenerateJWT(user.UserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"message": "Login successful",
+		"token":   token,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	// Get user_id from context :
 	userID := r.Context().Value(middleware.UserIDKey).(int)
