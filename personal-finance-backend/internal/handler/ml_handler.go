@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	"personal-finance-backend/internal/middleware"
@@ -54,7 +55,11 @@ type PredictResponse struct {
 
 // call Python ML API
 func callMLAPI(req PredictRequest) ([]byte, error) {
-	url := "http://localhost:5000/predict"
+	baseURL := os.Getenv("FASTAPI_ML_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:5000"
+	}
+	url := baseURL + "/predict"
 
 	jsonData, _ := json.Marshal(req)
 
@@ -113,7 +118,13 @@ func RetrainMLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Post("http://localhost:5000/retrain", "application/json", nil)
+	baseURL := os.Getenv("FLASK_ML_URL")
+	if baseURL == "" {
+		baseURL = "http://localhost:5001"
+	}
+	url := baseURL + "/retrain"
+
+	resp, err := http.Post(url, "application/json", nil)
 	if err != nil {
 		http.Error(w, "Retrain failed", http.StatusInternalServerError)
 		return

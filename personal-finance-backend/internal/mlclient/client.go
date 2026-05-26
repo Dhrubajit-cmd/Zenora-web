@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 )
-
-const MLURL = "http://127.0.0.1:8000/predict/spender-type"
 
 func PredictSpender(input ExpenseInput) (*PredictionData, error) {
 
@@ -21,8 +20,14 @@ func PredictSpender(input ExpenseInput) (*PredictionData, error) {
 	// 2 : Create HTTP Client :
 	client := &http.Client{Timeout: 10 * time.Second}
 
-	// 3: Create HTTP Request :
-	req, err := http.NewRequest(http.MethodPost, MLURL, bytes.NewBuffer(payload))
+	// 3: Create HTTP Request with dynamic cloud URL :
+	baseURL := os.Getenv("FASTAPI_ML_URL")
+	if baseURL == "" {
+		baseURL = "http://127.0.0.1:8000"
+	}
+	url := baseURL + "/predict/spender-type"
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +64,14 @@ type CategorizeRes struct {
 func CategorizeExpense(input string) string {
 	payload, _ := json.Marshal(CategorizeReq{Strings: []string{input}})
 	client := &http.Client{Timeout: 5 * time.Second}
-	req, _ := http.NewRequest(http.MethodPost, "http://127.0.0.1:8000/predict/categorize", bytes.NewBuffer(payload))
+	
+	baseURL := os.Getenv("FASTAPI_ML_URL")
+	if baseURL == "" {
+		baseURL = "http://127.0.0.1:8000"
+	}
+	url := baseURL + "/predict/categorize"
+
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 	
 	resp, err := client.Do(req)
