@@ -1,9 +1,14 @@
+import { useEffect } from "react"
 import LoginForm from "./LoginForm"
 import { FaTwitter, FaLinkedinIn, FaFacebookF } from "react-icons/fa"
 import logo from "../../assets/logo/logo.png"
 import "./login.css"
 
 function LoginPage() {
+  useEffect(() => {
+    document.title = "Zenora : Website";
+  }, []);
+
   return (
     <div className="login-container">
 
@@ -11,7 +16,7 @@ function LoginPage() {
       <header className="login-header">
         <div className="header-left">
           <img src={logo} alt="Zenora Logo" className="header-logo-img" />
-          <span className="logo-text">Zenora</span>
+          <span className="logo-text">Zenora : Website</span>
         </div>
         <div className="header-right">
           <button className="blog-btn" onClick={() => window.location.href = 'https://zenoraapp.in/blog'}>Blog</button>
