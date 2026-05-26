@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/joho/godotenv"
 
@@ -33,15 +34,19 @@ func enableCORS(next http.Handler) http.Handler {
 }
 func main() {
 
-	err := godotenv.Load()
+	// Load local .env file if present, but ignore error in cloud environment (like Render)
+	_ = godotenv.Load()
+
+	err := database.ConnectDB()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error connecting to the database: ", err)
 	}
-	err = database.ConnectDB()
-	if err != nil {
-		log.Fatal("Error connecting to the database")
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
-	log.Println("Server running on : 8080")
+	log.Printf("Server running on port %s\n", port)
 
 	http.HandleFunc("/auth/register", auth.RegisterHandler)
 	http.HandleFunc("/auth/login", auth.LoginHandler)
@@ -80,5 +85,5 @@ func main() {
 	mux.HandleFunc("/api/ml/retrain", handler.RetrainMLHandler)
 
 	//  Server start
-	http.ListenAndServe(":8080", enableCORS(mux))
+	http.ListenAndServe(":"+port, enableCORS(mux))
 }
