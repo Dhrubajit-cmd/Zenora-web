@@ -3,13 +3,14 @@
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+  font-family: 'Inter', sans-serif;
 }
 
 /* LEFT PANEL */
 
 .left-panel {
   flex: 1;
-  background: linear-gradient(135deg, #141622, #191c2b); /* Moniex Indigo */
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
   position: relative;
   color: white;
   overflow: hidden;
@@ -23,84 +24,95 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
+  z-index: 10;
 }
 
 .brand-logo {
-  width: 100px;
+  width: 80px;
   height: auto;
-  margin-bottom:2px;
+  margin-bottom: 15px;
 }
 
 .brand-name {
   margin-top: 6px;
-  font-size: 44px;
-  font-weight: 600;
+  font-size: 48px;
+  font-weight: 700;
   margin-bottom: 6px;
   color: white;
 }
 
 .tagline {
   margin-top: 15px;
-  font-size: 18px;
-  color: #D6C7A1;
+  font-size: 20px;
+  color: #fbbf24;
+  font-weight: 500;
 }
 
 .subtext {
-  margin-top: 8px;
-  font-size: 14px;
-  opacity: 0.8;
+  margin-top: 10px;
+  font-size: 15px;
+  opacity: 0.9;
+  color: #e2e8f0;
 }
 
 /* RIGHT PANEL */
 
 .right-panel {
   width: 50%;
-  background: #191c2b; /* Moniex Indigo backdrop for the card */
+  background: #f8fafc;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .login-form {
-  width: 400px;
+  width: 420px;
   display: flex;
   flex-direction: column;
-  background: #f4efe8; /* Moniex Beige Card */
+  background: #ffffff;
   padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  transition: 0.3s;
+}
+
+.login-form:hover {
+  transform: translateY(-5px);
 }
 
 .login-title {
-  font-size: 26px;
+  font-size: 24px;
   margin-bottom: 30px;
-  color: #1e293b;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: center;
 }
 
 .input-field {
   width: 100%;
-  height: 54px;
+  height: 50px;
   padding: 0 16px;
   padding-right: 48px;
-  border-radius: 14px;
-  border: 1px solid #cbd5e1;
-  background: white;
-  font-size: 15px;
-  color: #1e293b;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 14px;
+  color: #0f172a;
   outline: none;
   box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .input-field:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: #1e3a8a;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
 }
 
 .password-wrapper {
   position: relative;
   width: 100%;
-  margin-top:18px;
-
+  margin-top: 15px;
 }
 
 .eye-icon {
@@ -108,99 +120,104 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
-  color: #0B1F3B;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.eye-icon:hover {
+  color: #0f172a;
 }
 
 .login-button {
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: 32px;
+  margin-top: 25px;
+  padding: 14px 30px;
+  border-radius: 30px;
   border: none;
-  background: #191c2b;
+  background: linear-gradient(135deg, #1e3a8a, #fbbf24);
   color: white;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
-  transition: 0.2s;
-  font-weight: 600;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .login-button:hover {
-  background: #23315a;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .forgot-password {
   margin-top: 16px;
   text-align: center;
   font-size: 14px;
-  color: #1e293b;
+  color: #475569;
   cursor: pointer;
+  transition: color 0.2s;
 }
 .forgot-password:hover {
-  text-decoration: underline;
+  color: #1e3a8a;
 }
 
-.divider{
-    margin: 22px 0;
-    display: flex;
-    align-items: center;
-    text-align: center;
+.divider {
+  margin: 25px 0;
+  display: flex;
+  align-items: center;
+  text-align: center;
 }
 .divider::before,
 .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #0B1F3B;
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
 }
 .divider span {
   margin: 0 12px;
   font-size: 13px;
-  color: #666;
+  color: #94a3b8;
 }
 
-.google-login{
-  width:100%;
-  padding:14px;
+.google-login {
+  width: 100%;
+  padding: 14px 30px;
   border-radius: 30px;
   border: 1px solid #cbd5e1;
-  background: white;
-  color: #1e293b;
-  font-weight:600;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 500;
   font-size: 15px;
   cursor: pointer;
-  margin-bottom: 14px;
-  transition: 0.2s;
+  transition: all 0.3s ease;
+  margin-bottom: 0;
 }
 
 .google-login:hover {
-  background: #f8fafc;
+  background: #f1f5f9;
+  transform: translateY(-2px);
 }
 
 .create-account {
   width: 100%;
-  padding: 14px;
-  border-radius: 28px;
-  border: none;
-  background: #191c2b;
-  color: white;
-  font-weight: 600;
+  padding: 14px 30px;
+  border-radius: 30px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 500;
   font-size: 15px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.3s ease;
+  margin-top: 15px;
 }
 
 .create-account:hover {
-  background: #23315a;
-}
-
-.google-login,
-.create-account {
-  margin-top: 10px;
+  background: #f1f5f9;
+  transform: translateY(-2px);
 }
 
 .login-footer {
-  margin-top: 40px;
+  margin-top: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,15 +226,15 @@
 }
 
 .footer-logo {
-  width: 26px;
+  width: 24px;
   height: auto;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  filter: grayscale(100%) opacity(0.5);
 }
 
 .footer-text {
   margin-top: 0px;
-  font-size: 14px;
-  color: #1e293b;
-  font-weight: 500;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 400;
 }
-  
