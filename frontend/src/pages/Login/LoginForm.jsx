@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { FaEye, FaEyeSlash } from "react-icons/fa"
 import "./login.css"
-import FinTrackLogo from "../../assets/logo/FinTrackLogo.png"
+import logo from "../../assets/logo/logo.png"
 
 function LoginForm() {
   const navigate = useNavigate()
