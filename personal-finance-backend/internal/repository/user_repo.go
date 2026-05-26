@@ -22,7 +22,7 @@ Flow:
 */
 
 func GetUserByEmailOrUsername(identifier string) (*models.User, error) {
-	query := `Select user_id, user_name, email, phone, address, password_hashed, currency, google_id, auth_provider, COALESCE(age, 0) from users where email=$1 or user_name=$1 LIMIT 1`
+	query := `Select user_id, user_name, email, COALESCE(phone, ''), COALESCE(address, ''), COALESCE(password_hashed, ''), COALESCE(currency, 'USD'), google_id, auth_provider, COALESCE(age, 0) from users where email=$1 or user_name=$1 LIMIT 1`
 	row := database.DB.QueryRow(context.Background(), query, identifier)
 
 	var user models.User
@@ -88,7 +88,7 @@ func CreateGoogleUser(user *models.User) (int, error) {
 func GetUserByID(userID int) (*models.User, error) {
 
 	query := `
-	 Select user_id, user_name, email, phone, address, password_hashed, currency, google_id, auth_provider, COALESCE(age, 0), created_at
+	 Select user_id, user_name, email, COALESCE(phone, ''), COALESCE(address, ''), COALESCE(password_hashed, ''), COALESCE(currency, 'USD'), google_id, auth_provider, COALESCE(age, 0), created_at
 	 from users where user_id=$1
 	`
 
