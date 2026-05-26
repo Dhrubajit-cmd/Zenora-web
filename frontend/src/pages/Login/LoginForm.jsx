@@ -76,7 +76,7 @@ function LoginForm() {
           localStorage.setItem("token", loginData?.token)
           navigate("/dashboard")
         } else {
-          alert(loginData?.error || "User account not found. Please register first.")
+          alert(loginData?.error || "Failed to log in. Please try again.")
         }
       } else {
         alert("Invalid or expired OTP. Please try again.")

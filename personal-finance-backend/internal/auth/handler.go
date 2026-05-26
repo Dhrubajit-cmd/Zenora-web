@@ -110,8 +110,29 @@ func OTPLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := repository.GetUserByEmailOrUsername(req.Email)
 	if err != nil {
-		http.Error(w, "User not found. Please sign up.", http.StatusNotFound)
-		return
+		// User does not exist! Automatically register/sign up the user
+		username := req.Email
+		for i, char := range req.Email {
+			if char == '@' {
+				username = req.Email[:i]
+				break
+			}
+		}
+
+		newUser := models.User{
+			UserName: username,
+			Email:    req.Email,
+			Currency: "USD",
+		}
+
+		userID, createErr := repository.CreateUser(&newUser)
+		if createErr != nil {
+			http.Error(w, "Failed to automatically register user: "+createErr.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user = &newUser
+		user.UserID = userID
 	}
 
 	token, err := GenerateJWT(user.UserID)
