@@ -2,8 +2,9 @@ import joblib
 import pandas as pd 
 import os 
 
-# Load saved model : 
-MODEL_DIR = '/Users/dhrubajitchakravarty/Documents/Project/PBL/personal-finance-ml/models'
+# Load saved model dynamically: 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIR = os.path.join(os.path.dirname(CURRENT_DIR), 'models')
 
 kmeans = joblib.load(os.path.join(MODEL_DIR, 'kmeans_model.pkl'))
 scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))

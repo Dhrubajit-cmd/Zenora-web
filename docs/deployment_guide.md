@@ -20,80 +20,8 @@ graph TD
 
 ---
 
-## 🗄️ Step 1: Deploy the PostgreSQL Database (Neon)
-
-[Neon.tech](https://neon.tech) offers a serverless PostgreSQL database with a generous free tier, auto-scaling, and an excellent online SQL editor.
-
-### 1. Set Up the Instance
-1. Go to [Neon](https://neon.tech) and sign up for a free account.
-2. Click **Create Project**. Name it `Zenora-Database` and select your closest region.
-3. Once the database is created, copy the **Connection String** (which looks like `postgresql://alex:password@ep-cool-snowflake-12345.us-east-2.aws.neon.tech/neondb?sslmode=require`). Save this safely; it is your cloud `DATABASE_URL`.
-
-### 2. Initialize the Database Schema
-Go to the **SQL Editor** tab in the Neon dashboard and execute the following SQL script to create all required tables:
-
-```sql
--- 1. Users Table
-CREATE TABLE IF NOT EXISTS users (
-    user_id SERIAL PRIMARY KEY,
-    user_name VARCHAR(100) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20) DEFAULT '',
-    address VARCHAR(255) DEFAULT '',
-    password_hashed VARCHAR(255) DEFAULT '',
-    currency VARCHAR(10) DEFAULT 'USD',
-    google_id VARCHAR(255) DEFAULT '',
-    age INT DEFAULT 0
-);
-
--- 2. Incomes Table
-CREATE TABLE IF NOT EXISTS incomes (
-    income_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    source VARCHAR(100) NOT NULL,
-    amount NUMERIC(12, 2) NOT NULL,
-    income_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 3. Expenses Table
-CREATE TABLE IF NOT EXISTS expenses (
-    expense_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    category VARCHAR(100) NOT NULL,
-    description VARCHAR(255) DEFAULT '',
-    amount NUMERIC(12, 2) NOT NULL,
-    expense_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 4. Investments Table
-CREATE TABLE IF NOT EXISTS investments (
-    investment_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    asset_type VARCHAR(100) NOT NULL,
-    amount NUMERIC(12, 2) NOT NULL,
-    investment_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 5. Goals Table
-CREATE TABLE IF NOT EXISTS goals (
-    goal_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    goal_name VARCHAR(255) NOT NULL,
-    target_amount NUMERIC(12, 2) NOT NULL,
-    target_date DATE NOT NULL
-);
-
--- 6. ML Overrides Table
-CREATE TABLE IF NOT EXISTS ml_overrides (
-    override_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    raw_text VARCHAR(255) NOT NULL,
-    corrected_category VARCHAR(100) NOT NULL
-);
-```
+> [!NOTE]
+> **PostgreSQL Database:** Since your database is already fully set up and configured on Neon with all the required tables, you do not need to create or run any SQL setup scripts! Just make sure you have your database **Connection String** (`DATABASE_URL`) ready to connect to your Go backend in the following steps.
 
 ---
 
@@ -209,14 +137,20 @@ Replace all instances of `"http://localhost:8080"` with `` `${import.meta.env.VI
 
 ---
 
-## 🖥️ Step 6: Deploy the Frontend (Vercel / Netlify)
+## 🖥️ Step 6: Configure Environment Variables in Your Deployed Vercel Project
 
-Vercel and Netlify offer excellent developer ecosystems that host static React websites for free with automatic SSL certificate generation.
+Since your frontend is already hosted on Vercel, you do not need to create a new project! You just need to link your existing Vercel deployment to your newly hosted cloud backends by adding the environment variables in your Vercel project dashboard:
 
-### Deploying to Vercel
-1. Sign up for a free [Vercel](https://vercel.com) account.
-2. Click **Add New** > **Project** and connect your Git repository.
-3. Configure the setup:
-   * **Framework Preset:** `Vite`
-   * **Root Directory:** `frontend`
-4. Click **Deploy**. Vercel will automatically build your React codebase, apply the `.env.production` environment variables, and deliver a live production site!
+### 1. Add Environment Variables on Vercel
+1. Go to your [Vercel Dashboard](https://vercel.com) and click on your **Zenora** project.
+2. Navigate to **Settings** > **Environment Variables** in the top menu.
+3. Add the following three environment variables under the **Production** environment:
+   * **Key:** `VITE_API_URL` ➜ **Value:** `https://zenora-api.onrender.com` (Your Go Backend Cloud URL)
+   * **Key:** `VITE_OTP_URL` ➜ **Value:** `https://zenora-otp.onrender.com` (Your Node OTP Server Cloud URL)
+   * **Key:** `VITE_ML_URL` ➜ **Value:** `https://zenora-ml.onrender.com` (Your Python ML Server Cloud URL)
+4. Click **Save**.
+
+### 2. Trigger a Redeploy
+1. Go to the **Deployments** tab of your project in Vercel.
+2. Locate your latest deployment, click the three dots (`...`), and select **Redeploy**.
+3. Vercel will rebuild your React app using Vite, compile the new cloud endpoints, and serve your live Zenora application globally connected to the cloud!
