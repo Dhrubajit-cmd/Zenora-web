@@ -59,15 +59,23 @@
 }
 
 .landing-link {
-  font-size: 15px;
+  padding: 10px 24px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #2b3e7a 0%, #ebae2c 100%);
+  color: #ffffff;
   font-weight: 500;
-  color: #334155;
+  font-size: 14px;
   text-decoration: none;
-  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
 .landing-link:hover {
-  color: #1e3a8a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(43, 62, 122, 0.25);
+  color: #ffffff;
 }
 
 .center-panel {
@@ -149,7 +157,7 @@
   padding: 14px 30px;
   border-radius: 30px;
   border: none;
-  background: linear-gradient(135deg, #1e3a8a, #fbbf24);
+  background: linear-gradient(135deg, #2b3e7a 0%, #ebae2c 100%);
   color: white;
   font-size: 15px;
   cursor: pointer;
@@ -159,7 +167,7 @@
 
 .login-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 20px rgba(43, 62, 122, 0.2);
 }
 
 .forgot-password {

@@ -16,7 +16,7 @@ function LoginPage() {
       <header className="login-header">
         <div className="header-left">
           <img src={logo} alt="Zenora Logo" className="header-logo-img" />
-          <span className="logo-text">Zenora : Website</span>
+          <span className="logo-text">Zenora</span>
         </div>
         <div className="header-right">
           <button className="blog-btn" onClick={() => window.location.href = 'https://zenoraapp.in/blog'}>Blog</button>
