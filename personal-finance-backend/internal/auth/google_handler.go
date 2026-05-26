@@ -2,7 +2,12 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+
+	"personal-finance-backend/internal/models"
+	"personal-finance-backend/internal/repository"
 )
 
 // 🔹 Redirect user to Google
@@ -26,7 +31,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	// 🔁 Exchange code for token
 	token, err := config.Exchange(r.Context(), code)
 	if err != nil {
-		http.Error(w, "Failed to exchange token", http.StatusInternalServerError)
+		http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -35,14 +40,14 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
-		http.Error(w, "Failed to get user info", http.StatusInternalServerError)
+		http.Error(w, "Failed to get user info: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer resp.Body.Close()
 
 	var userInfo map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		http.Error(w, "Failed to decode user info", http.StatusInternalServerError)
+		http.Error(w, "Failed to decode user info: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -55,19 +60,52 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	println("Google user:", email)
 
-	// 👉 TODO: Check DB or create user
-	// For now using dummy userID = 1
-	jwtToken, err := GenerateJWT(1)
+	// 👤 Check if user exists, if not, create them!
+	user, err := repository.GetUserByEmailOrUsername(email)
+	var userID int
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		// User does not exist! Automatically register/sign up the user
+		username := email
+		for i, char := range email {
+			if char == '@' {
+				username = email[:i]
+				break
+			}
+		}
+
+		googleIDStr := ""
+		if id, ok := userInfo["id"].(string); ok {
+			googleIDStr = id
+		}
+
+		newUser := models.User{
+			UserName:     username,
+			Email:        email,
+			GoogleID:     &googleIDStr,
+			AuthProvider: "google",
+			Currency:     "USD",
+		}
+
+		userID, err = repository.CreateGoogleUser(&newUser)
+		if err != nil {
+			http.Error(w, "Failed to automatically register Google user: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		userID = user.UserID
+	}
+
+	jwtToken, err := GenerateJWT(userID)
+	if err != nil {
+		http.Error(w, "Failed to generate JWT: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]string{
-		"message": "Google login successful",
-		"token":   jwtToken,
+	// Redirect back to React Frontend with the token in query parameter
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:5173"
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	redirectURL := fmt.Sprintf("%s/?token=%s", frontendURL, jwtToken)
+	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }

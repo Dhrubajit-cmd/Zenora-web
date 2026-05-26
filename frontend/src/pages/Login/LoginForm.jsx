@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { FaApple } from "react-icons/fa"
 import { FcGoogle } from "react-icons/fc"
@@ -11,6 +11,19 @@ function LoginForm() {
   const [otp, setOtp] = useState("")
   const [showOtpField, setShowOtpField] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  // Intercept Google OAuth token from URL redirection
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get("token")
+    if (token) {
+      localStorage.setItem("token", token)
+      // Clean up token from URL browser bar history
+      window.history.replaceState({}, document.title, window.location.pathname)
+      alert("Login successful! Welcome to Zenora. 🚀")
+      navigate("/dashboard")
+    }
+  }, [navigate])
 
   // Send OTP via Node server on port 5050
   const handleSendOtp = async () => {
