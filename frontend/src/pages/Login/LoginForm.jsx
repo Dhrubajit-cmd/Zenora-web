@@ -121,15 +121,6 @@ function LoginForm() {
         Create New Account
       </button>
 
-      <div className="login-footer">
-        <img
-          src={FinTrackLogo}
-          alt="Zenora"
-          className="footer-logo"
-        />
-        <p className="footer-text"> 2026 Zenora.</p>
-      </div>
-
     </div>
   )
 
