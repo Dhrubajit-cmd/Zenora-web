@@ -60,7 +60,7 @@ function LoginForm() {
 
     <div className="login-form">
 
-      <h2 className="login-title">Log into FinTrack</h2>
+      <h2 className="login-title">Log into Zenora</h2>
 
       {/* EMAIL FIELD */}
       <input
@@ -124,10 +124,10 @@ function LoginForm() {
       <div className="login-footer">
         <img
           src={FinTrackLogo}
-          alt="FinTrack"
+          alt="Zenora"
           className="footer-logo"
         />
-        <p className="footer-text"> 2026 FinTrack.</p>
+        <p className="footer-text"> 2026 Zenora.</p>
       </div>
 
     </div>
