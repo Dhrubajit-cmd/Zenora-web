@@ -1,16 +1,12 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
 import "./login.css"
-import FinTrackLogo from "../../assets/logo/FinTrackLogo.png"
 
 function LoginForm() {
   const navigate = useNavigate()
 
   const [identifier, setIdentifier] = useState("")
   const [password, setPassword] = useState("")
-
-  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async () => {
     try {
@@ -55,84 +51,45 @@ function LoginForm() {
     }
   }
 
-
   return (
+    <div className="login-card">
+      <h2 className="login-title">Welcome back</h2>
+      <p className="login-subtitle">Sign in to your account to continue</p>
 
-    <div className="login-form">
-
-      <h2 className="login-title">Log into Zenora</h2>
-
-      {/* EMAIL FIELD */}
-      <input
-        type="text"
-        placeholder="Email or Username"
-        className="input-field"
-        value={identifier}
-        onChange={(e) => setIdentifier(e.target.value)}
-      />
-
-      {/* PASSWORD FIELD */}
-      <div className="password-wrapper">
+      <div className="form-group">
+        <label>Email</label>
         <input
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
+          type="text"
+          placeholder="name@example.com"
+          className="input-field"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+        />
+      </div>
+
+      <div className="form-group">
+        <div className="password-header">
+          <label>Password</label>
+          <span className="forgot-password">Forgot password?</span>
+        </div>
+        <input
+          type="password"
+          placeholder="Enter your password"
           className="input-field"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-
-        <span
-          className="eye-icon"
-          onClick={() => setShowPassword(!showPassword)}
-        >
-          {showPassword ? <FaEye /> : <FaEyeSlash />}
-        </span>
-
       </div>
 
-      <button className="login-button" onClick={handleLogin}>
-        Log in
+      <button className="sign-in-button" onClick={handleLogin}>
+        Sign in
       </button>
-      {/* FORGOT PASSWORD LINK */}
-      <p className="forgot-password">
-        Forgot password?
+
+      <p className="signup-text">
+        Don't have an account? <span onClick={() => navigate("/register")}>Sign up</span>
       </p>
-
-      {/* DIVIDER */}
-      <div className="divider">
-        <span>OR</span>
-      </div>
-
-      {/*login with google*/}
-      <button
-        className="google-login"
-        onClick={() => {
-          window.location.href = "http://localhost:8080/auth/google/login"
-        }}
-      >
-        Continue with Google
-      </button>
-
-      {/*Create Account*/}
-      <button
-        className="create-account"
-        onClick={() => navigate("/register")}
-      >
-        Create New Account
-      </button>
-
-      <div className="login-footer">
-        <img
-          src={FinTrackLogo}
-          alt="Zenora"
-          className="footer-logo"
-        />
-        <p className="footer-text"> 2026 Zenora.</p>
-      </div>
-
     </div>
   )
-
 }
 
 export default LoginForm

@@ -1,34 +1,24 @@
 import LoginForm from "./LoginForm"
-import ParticleUniverse from "../../components/animations/ParticleUniverse"
 import "./login.css"
-import FinTrackLogo from "../../assets/logo/FinTrackLogo.png"
 
 function LoginPage() {
   return (
-    <div className="login-container">
+    <div className="login-page">
+      
+      {/* Header */}
+      <header className="login-header">
+        <div className="logo-box">Z</div>
+        <span className="logo-text">Zenora</span>
+      </header>
 
-      <div className="left-panel">
-        <ParticleUniverse />
-
-        <div className="branding">
-          <img
-            src={FinTrackLogo}
-            alt="FinTrack Logo"
-            className="brand-logo"
-          />
-          
-          <h1 className="brand-name">FinTrack</h1>
-          <p className="tagline">Smart. Secure. Financial Management</p>
-          <p className="subtext">
-            AI-driven personal finance intelligence
-          </p>
-        </div>
-      </div>
-
-      <div className="right-panel">
+      {/* Main Content */}
+      <main className="login-main">
         <LoginForm />
-      </div>
+      </main>
 
+      {/* Help Icon */}
+      <div className="help-icon">?</div>
+      
     </div>
   )
 }
