@@ -1,10 +1,24 @@
 import LoginForm from "./LoginForm"
 import { FaTwitter, FaLinkedinIn, FaFacebookF } from "react-icons/fa"
+import FinTrackLogo from "../../assets/logo/FinTrackLogo.png"
 import "./login.css"
 
 function LoginPage() {
   return (
     <div className="login-container">
+      
+      {/* Header */}
+      <header className="login-header">
+        <div className="header-left">
+          <img src={FinTrackLogo} alt="Zenora Logo" className="header-logo-img" />
+          <span className="logo-text">Zenora</span>
+        </div>
+        <div className="header-right">
+          <button className="blog-btn" onClick={() => window.location.href='https://zenoraapp.in/blog'}>Blog</button>
+          <a href="https://zenoraapp.in" className="landing-link" target="_blank" rel="noopener noreferrer">Product Landing Page</a>
+        </div>
+      </header>
+
       <div className="center-panel">
         <LoginForm />
       </div>
@@ -25,8 +39,8 @@ function LoginPage() {
           </div>
 
           <div className="footer-right">
-            <a href="/privacy" className="footer-link">Privacy Policy</a>
-            <a href="/terms" className="footer-link">Terms of Use</a>
+            <a href="https://www.zenoraapp.in/privacy.html" className="footer-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            <a href="https://www.zenoraapp.in/terms.html" className="footer-link" target="_blank" rel="noopener noreferrer">Terms of Use</a>
           </div>
 
         </div>
