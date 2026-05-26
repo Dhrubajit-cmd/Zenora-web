@@ -129,8 +129,9 @@ function ActivityPage() {
           display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999
         }}>
           <div style={{
-            background: "#f4efe8", padding: "30px", borderRadius: "20px",
-            width: "90%", maxWidth: "450px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            background: "#ffffff", padding: "30px", borderRadius: "20px",
+            width: "90%", maxWidth: "450px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid #e2e8f0"
           }}>
             <h3 style={{ margin: "0 0 5px", color: "#0f172a", fontSize: "22px" }}>Account Settings</h3>
             <p style={{ margin: "0 0 25px", color: "#64748b", fontSize: "14px" }}>Manage your profile and platform preferences.</p>
@@ -146,7 +147,7 @@ function ActivityPage() {
             <div style={{ marginBottom: "25px" }}>
               <label style={{ display: "block", color: "#475569", fontWeight: "600", marginBottom: "8px", fontSize: "14px" }}>Visual Theme</label>
               <div style={{ background: "white", padding: "12px 16px", borderRadius: "10px", border: "1px solid #cbd5e1", color: "#1e293b", fontWeight: "500" }}>
-                Moniex Deep Indigo (Active)
+                Zenora Light Premium (Active)
               </div>
             </div>
 
@@ -159,7 +160,7 @@ function ActivityPage() {
                 </button>
                 <button 
                   onClick={handleLogout}
-                  style={{ padding: "12px 20px", background: "#191c2b", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "15px" }}
+                  style={{ padding: "12px 20px", background: "linear-gradient(135deg, #1e3a8a, #fbbf24)", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "15px" }}
                 >
                   Sign Out
                 </button>
@@ -191,7 +192,7 @@ function ActivityPage() {
       {/* MAIN WRAPPER */}
       <div className="main-wrapper">        {/* HEADER */}
         <div className="header">
-          <h2 style={{ color: "white", margin: 0 }}>Activity Ledger</h2>
+          <h2 style={{ margin: 0 }}>Activity Ledger</h2>
           <div className="profile" onClick={() => setSettingsModal(true)}>👤 User</div>
         </div>
 

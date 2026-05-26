@@ -31,8 +31,8 @@
 
 .logo-text {
   font-size: 18px;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: #1e3a8a;
 }
 
 .header-right {
@@ -61,7 +61,7 @@
 .landing-link {
   padding: 10px 24px;
   border-radius: 30px;
-  background: linear-gradient(135deg, #2b3e7a 0%, #ebae2c 100%);
+  background: linear-gradient(135deg, #1e3a8a, #fbbf24);
   color: #ffffff;
   font-weight: 500;
   font-size: 14px;
@@ -74,7 +74,7 @@
 
 .landing-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(43, 62, 122, 0.25);
+  box-shadow: 0 10px 20px rgba(30, 58, 138, 0.2);
   color: #ffffff;
 }
 
@@ -117,8 +117,8 @@
   height: 56px;
   padding: 0 20px;
   border-radius: 16px;
-  border: 2px solid transparent;
-  background-color: #f3f4f6;
+  border: 1px solid #cbd5e1;
+  background-color: #f8fafc;
   font-size: 16px;
   color: #111111;
   outline: none;
@@ -133,8 +133,8 @@
 
 .input-field-custom:focus {
   background-color: #ffffff;
-  border-color: #2b3e7a;
-  box-shadow: 0 0 0 4px rgba(43, 62, 122, 0.1);
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.1);
 }
 
 .password-wrapper-custom {
@@ -184,15 +184,14 @@
 }
 
 .continue-btn.active {
-  background-color: #1a1a1a;
+  background: linear-gradient(135deg, #1e3a8a, #fbbf24);
   color: #ffffff;
   cursor: pointer;
 }
 
 .continue-btn.active:hover {
-  background-color: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px rgba(30, 58, 138, 0.15);
 }
 
 .selected-identifier-row {
@@ -219,7 +218,7 @@
 .change-btn {
   background: none;
   border: none;
-  color: #2b3e7a;
+  color: #1e3a8a;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -229,7 +228,7 @@
 }
 
 .change-btn:hover {
-  background-color: rgba(43, 62, 122, 0.08);
+  background-color: rgba(30, 58, 138, 0.08);
 }
 
 .form-divider {

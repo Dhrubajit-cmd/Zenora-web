@@ -7,8 +7,10 @@
   --accent: #1e3a8a;
   --accent-bg: rgba(30, 58, 138, 0.1);
   --accent-border: rgba(30, 58, 138, 0.5);
+  --accent-gold: #fbbf24;
+  --accent-gradient: linear-gradient(135deg, #1e3a8a, #fbbf24);
   --social-bg: #ffffff;
-  --shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  --shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
 
   --sans: 'Inter', system-ui, -apple-system, sans-serif;
   --heading: 'Inter', system-ui, -apple-system, sans-serif;

@@ -63,7 +63,7 @@ function InvestmentsPage() {
       {/* MAIN WRAPPER */}
       <div className="main-wrapper">
         <div className="header">
-          <h2 style={{ color: "white", margin: 0 }}>My Investments</h2>
+          <h2 style={{ margin: 0 }}>My Investments</h2>
           <div className="profile">👤 User</div>
         </div>
 

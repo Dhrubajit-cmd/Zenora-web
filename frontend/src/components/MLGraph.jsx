@@ -67,10 +67,10 @@ function MLGraph() {
     <div
       style={{
         minHeight: "100vh",
-        padding: "30px",
-        background: "linear-gradient(135deg, #0f172a, #1e293b)",
-        color: "white",
-        fontFamily: "sans-serif",
+        padding: "40px 30px",
+        background: "#f8fafc",
+        color: "#0f172a",
+        fontFamily: "'Inter', sans-serif",
         textAlign: "center",
       }}
     >
@@ -95,16 +95,26 @@ function MLGraph() {
           onChange={(e) => setEnd(e.target.value)}
           placeholder="Months"
           style={{
-            padding: "10px",
+            padding: "12px 20px",
             borderRadius: "8px",
-            border: "1px solid #334155",
-            background: "#1e293b",
-            color: "white",
+            border: "1px solid #cbd5e1",
+            background: "#ffffff",
+            color: "#0f172a",
             outline: "none",
-            width: "120px",
+            width: "140px",
+            fontSize: "15px",
+            fontWeight: "500",
+            textAlign: "center",
+            transition: "all 0.2s"
           }}
-          onFocus={(e) => (e.target.style.border = "1px solid #3b82f6")}
-          onBlur={(e) => (e.target.style.border = "1px solid #334155")}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#1e3a8a";
+            e.target.style.boxShadow = "0 0 0 3px rgba(30, 58, 138, 0.08)";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#cbd5e1";
+            e.target.style.boxShadow = "none";
+          }}
         />
       </div>
 
@@ -113,15 +123,17 @@ function MLGraph() {
         <button
           onClick={handlePredict}
           style={{
-            marginRight: "10px",
-            background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+            marginRight: "12px",
+            background: "linear-gradient(135deg, #1e3a8a, #fbbf24)",
             color: "white",
             border: "none",
-            padding: "10px 18px",
-            borderRadius: "8px",
+            padding: "12px 24px",
+            borderRadius: "30px",
             cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            fontWeight: "600",
+            fontSize: "15px",
+            transition: "all 0.2s",
+            boxShadow: "0 4px 12px rgba(30, 58, 138, 0.15)",
           }}
         >
           Predict
@@ -133,11 +145,13 @@ function MLGraph() {
             background: "linear-gradient(135deg, #f59e0b, #ef4444)",
             color: "white",
             border: "none",
-            padding: "10px 18px",
-            borderRadius: "8px",
+            padding: "12px 24px",
+            borderRadius: "30px",
             cursor: "pointer",
-            fontWeight: "bold",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            fontWeight: "600",
+            fontSize: "15px",
+            transition: "all 0.2s",
+            boxShadow: "0 4px 12px rgba(239, 68, 68, 0.15)",
           }}
         >
           Retrain
@@ -148,26 +162,27 @@ function MLGraph() {
       {lastDate && lastExpense && (
         <div
           style={{
-            marginBottom: "20px",
-            padding: "15px",
-            borderRadius: "12px",
-            background: "#020617",
-            border: "1px solid #1e293b",
+            marginBottom: "25px",
+            padding: "24px",
+            borderRadius: "16px",
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
             display: "inline-block",
-            minWidth: "250px",
+            minWidth: "280px",
+            boxShadow: "0 10px 20px rgba(0, 0, 0, 0.03)",
           }}
         >
-          <p style={{ margin: "5px 0", color: "#94a3b8" }}>
+          <p style={{ margin: "0 0 4px", color: "#64748b", fontSize: "14px", fontWeight: "500" }}>
             Last Date
           </p>
-          <p style={{ fontSize: "18px", fontWeight: "bold" }}>
+          <p style={{ fontSize: "18px", fontWeight: "700", color: "#0f172a", margin: "0 0 16px" }}>
             {lastDate}
           </p>
 
-          <p style={{ margin: "10px 0 5px", color: "#94a3b8" }}>
+          <p style={{ margin: "0 0 4px", color: "#64748b", fontSize: "14px", fontWeight: "500" }}>
             Last Expense
           </p>
-          <p style={{ fontSize: "20px", fontWeight: "bold", color: "#22c55e" }}>
+          <p style={{ fontSize: "22px", fontWeight: "800", color: "#1e3a8a", margin: "0" }}>
             ₹{lastExpense}
           </p>
         </div>
@@ -177,12 +192,12 @@ function MLGraph() {
       {plotHTML ? (
         <div
           style={{
-            marginTop: "20px",
-            padding: "10px",
-            borderRadius: "16px",
-            background: "#020617",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-            border: "1px solid #1e293b",
+            marginTop: "25px",
+            padding: "15px",
+            borderRadius: "20px",
+            background: "#ffffff",
+            boxShadow: "0 10px 25px rgba(30, 58, 138, 0.04)",
+            border: "1px solid #e2e8f0",
             maxWidth: "1200px",
             marginInline: "auto",
           }}
