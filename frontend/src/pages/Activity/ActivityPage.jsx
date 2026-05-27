@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo/logo.png";
+import { toast } from "../../utils/toast";
 import "../Dashboard/dashboard.css"; 
 
 function ActivityPage() {
@@ -67,15 +68,15 @@ function ActivityPage() {
         })
       });
       if (res.ok) {
-        alert("Awesome! The AI has been permanently trained to understand this!");
+        toast.success("Awesome! The AI has been permanently trained to understand this!");
         setOverrideModal({ isOpen: false, itemDesc: "" });
         setOverrideInput("");
         fetchActivity();
       } else {
-        alert("Failed to override category.");
+        toast.error("Failed to override category.");
       }
     } catch(err) {
-      alert("Network error.");
+      toast.error("Network error.");
     }
   };
 

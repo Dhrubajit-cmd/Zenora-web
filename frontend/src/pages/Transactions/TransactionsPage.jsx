@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo/logo.png";
+import { toast } from "../../utils/toast";
 import "../Dashboard/dashboard.css"; // Reuse dashboard styling
 
 function TransactionsPage() {
@@ -55,15 +56,15 @@ function TransactionsPage() {
       });
 
       if (res.ok) {
-        alert("Transaction added successfully!");
+        toast.success("Transaction added successfully!");
         setAmount("");
         setDescription("");
       } else {
         const errorData = await res.text();
-        alert("Failed to add transaction: " + errorData);
+        toast.error("Failed to add transaction: " + errorData);
       }
     } catch (err) {
-      alert("Error connecting to server.");
+      toast.error("Error connecting to server.");
     } finally {
       setLoading(false);
     }

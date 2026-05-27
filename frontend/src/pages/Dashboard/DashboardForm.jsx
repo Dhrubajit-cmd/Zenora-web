@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as PieTooltip, BarChart, Bar, XAxis, Tooltip as BarTooltip } from "recharts";
 import logo from "../../assets/logo/logo.png";
+import { toast } from "../../utils/toast";
 import "./dashboard.css";
 
 function DashboardForm() {
@@ -75,15 +76,15 @@ function DashboardForm() {
         })
       });
       if (res.ok) {
-        alert("Awesome! The AI has been permanently trained to understand this!");
+        toast.success("Awesome! The AI has been permanently trained to understand this!");
         setOverrideModal({ isOpen: false, itemDesc: "" });
         setOverrideInput("");
         fetchDashboard();
       } else {
-        alert("Failed to override category.");
+        toast.error("Failed to override category.");
       }
     } catch (err) {
-      alert("Network error.");
+      toast.error("Network error.");
     }
   };
 
@@ -101,14 +102,14 @@ function DashboardForm() {
         })
       });
       if (res.ok) {
-        alert("Goal Target updated successfully!");
+        toast.success("Goal Target updated successfully!");
         setGoalEditModal({ isOpen: false, goal: null, amount: "", date: "" });
         fetchDashboard();
       } else {
-        alert("Failed to update goal.");
+        toast.error("Failed to update goal.");
       }
     } catch (e) {
-      alert("Network error.");
+      toast.error("Network error.");
     }
   };
 
@@ -127,10 +128,10 @@ function DashboardForm() {
       if (res.ok) {
         fetchDashboard();
       } else {
-        alert("Failed to delete transaction.");
+        toast.error("Failed to delete transaction.");
       }
     } catch (err) {
-      alert("Network error.");
+      toast.error("Network error.");
     }
   };
 

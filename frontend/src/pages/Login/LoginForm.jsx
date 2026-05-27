@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { FaApple } from "react-icons/fa"
 import { FcGoogle } from "react-icons/fc"
+import { toast } from "../../utils/toast"
 import "./login.css"
 
 function LoginForm() {
@@ -20,7 +21,7 @@ function LoginForm() {
       localStorage.setItem("token", token)
       // Clean up token from URL browser bar history
       window.history.replaceState({}, document.title, window.location.pathname)
-      alert("Login successful! Welcome to Zenora. 🚀")
+      toast.success("Login successful! Welcome to Zenora. 🚀")
       navigate("/dashboard")
     }
   }, [navigate])
@@ -28,7 +29,7 @@ function LoginForm() {
   // Send OTP via Node server on port 5050
   const handleSendOtp = async () => {
     if (!identifier.trim()) {
-      alert("Please enter your email address.")
+      toast.error("Please enter your email address.")
       return
     }
 
@@ -44,13 +45,13 @@ function LoginForm() {
 
       if (data.success) {
         setShowOtpField(true)
-        alert("Verification OTP sent to your email! ✨")
+        toast.success("Verification OTP sent to your email! ✨")
       } else {
-        alert("Failed to send OTP. Please ensure your email is correct and the server is running.")
+        toast.error("Failed to send OTP. Please ensure your email is correct and the server is running.")
       }
     } catch (err) {
       console.error("Error sending OTP:", err)
-      alert("Connection error trying to reach OTP Server.")
+      toast.error("Connection error trying to reach OTP Server.")
     } finally {
       setLoading(false)
     }
@@ -59,7 +60,7 @@ function LoginForm() {
   // Verify OTP and Login via Go backend on port 8080
   const handleVerifyAndLogin = async () => {
     if (!otp.trim() || otp.length !== 6) {
-      alert("Please enter the 6-digit OTP.")
+      toast.error("Please enter the 6-digit OTP.")
       return
     }
 
@@ -85,18 +86,18 @@ function LoginForm() {
         const loginData = await loginRes.json()
 
         if (loginRes.ok) {
-          alert("Login successful! Welcome to Zenora. 🚀")
+          toast.success("Login successful! Welcome to Zenora. 🚀")
           localStorage.setItem("token", loginData?.token)
           navigate("/dashboard")
         } else {
-          alert(loginData?.error || "Failed to log in. Please try again.")
+          toast.error(loginData?.error || "Failed to log in. Please try again.")
         }
       } else {
-        alert("Invalid or expired OTP. Please try again.")
+        toast.error("Invalid or expired OTP. Please try again.")
       }
     } catch (err) {
       console.error("Error logging in:", err)
-      alert("System network error during OTP verification or login.")
+      toast.error("System network error during OTP verification or login.")
     } finally {
       setLoading(false)
     }
@@ -195,7 +196,7 @@ function LoginForm() {
       <button
         className="social-btn"
         onClick={() => {
-          alert("Apple Sign-In is integrated and coming soon! 🚀")
+          toast.info("Apple Sign-In is integrated and coming soon! 🚀")
         }}
       >
         <FaApple className="apple-icon" />

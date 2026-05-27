@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "../utils/toast";
 
 function MLGraph() {
   const [plotHTML, setPlotHTML] = useState("");
@@ -38,11 +39,11 @@ function MLGraph() {
           data.last_expense ? Number(data.last_expense).toFixed(2) : ""
         );
       } else {
-        alert("Backend error: " + data.message);
+        toast.error("Backend error: " + data.message);
       }
     } catch (err) {
       console.error(err);
-      alert("Error fetching graph");
+      toast.error("Error fetching graph");
     }
   };
 
@@ -56,10 +57,10 @@ function MLGraph() {
         body: JSON.stringify({ user_id: userId }),
       });
 
-      alert("Model retrained successfully");
+      toast.success("Model retrained successfully");
     } catch (err) {
       console.error(err);
-      alert("Retrain failed");
+      toast.error("Retrain failed");
     }
   };
 
