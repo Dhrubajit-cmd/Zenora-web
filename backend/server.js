@@ -1,7 +1,7 @@
 require("dotenv").config()
 
 const express = require("express")
-const nodemailer = require("nodemailer")
+const { Resend } = require("resend")
 const cors = require("cors")
 
 const app = express()
@@ -10,13 +10,8 @@ app.use(express.json())
 
 let otpStore = {}
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-})
+// Initialize Resend Client
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Send OTP
 app.post("/send-otp", async (req, res) => {
@@ -30,10 +25,10 @@ app.post("/send-otp", async (req, res) => {
   }
 
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: email,
-      subject: "FinTrack OTP Verification",
+      subject: "Zenora OTP Verification",
       html: `<h2>Your OTP is: ${otp}</h2>`
     })
 
