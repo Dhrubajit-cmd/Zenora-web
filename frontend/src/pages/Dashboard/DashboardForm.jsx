@@ -190,6 +190,11 @@ function DashboardForm() {
               placeholder="e.g. shopping, travel, utilities, food and drink"
               value={overrideInput}
               onChange={(e) => setOverrideInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  submitEditCategory();
+                }
+              }}
               style={{
                 width: "100%", padding: "12px", border: "1px solid #cbd5e1", borderRadius: "8px",
                 marginBottom: "20px", outline: "none", fontSize: "14px", boxSizing: "border-box"
