@@ -43,11 +43,6 @@
   gap: 10px;
 }
 
-.logo::after {
-  content: "✨";
-  font-size: 16px;
-}
-
 .menu {
   list-style: none;
   padding: 0;

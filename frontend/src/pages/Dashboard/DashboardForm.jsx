@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as PieTooltip, BarChart, Bar, XAxis, Tooltip as BarTooltip } from "recharts";
+import logo from "../../assets/logo/logo.png";
 import "./dashboard.css";
 
 function DashboardForm() {
@@ -321,7 +322,10 @@ function DashboardForm() {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div className="sidebar-top">
-          <h2 className="logo">Zenora</h2>
+          <h2 className="logo" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
+            <img src={logo} alt="Zenora Logo" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
+            Zenora
+          </h2>
           <ul className="menu">
             <li className="active">Dashboard</li>
             <li onClick={() => navigate("/transactions")} style={{ cursor: "pointer" }}>Transactions</li>

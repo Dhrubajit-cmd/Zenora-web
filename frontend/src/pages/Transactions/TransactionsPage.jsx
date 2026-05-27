@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../../assets/logo/logo.png";
 import "../Dashboard/dashboard.css"; // Reuse dashboard styling
 
 function TransactionsPage() {
@@ -73,7 +74,10 @@ function TransactionsPage() {
       {/* SIDEBAR */}
       <div className="sidebar">
         <div className="sidebar-top">
-          <h2 className="logo" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer" }}>FinTrack</h2>
+          <h2 className="logo" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}>
+            <img src={logo} alt="Zenora Logo" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
+            Zenora
+          </h2>
           <ul className="menu">
             <li onClick={() => navigate("/dashboard")} style={{ cursor: "pointer" }}>Dashboard</li>
             <li className="active">Transactions</li>
