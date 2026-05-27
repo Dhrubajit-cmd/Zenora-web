@@ -26,7 +26,7 @@ app.post("/send-otp", async (req, res) => {
 
   try {
     await resend.emails.send({
-      from: "onboarding@resend.dev",
+      from: "Zenora <otp@otp.zenora.in>",
       to: email,
       subject: "Zenora OTP Verification",
       html: `<h2>Your OTP is: ${otp}</h2>`
