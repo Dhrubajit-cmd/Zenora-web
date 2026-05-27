@@ -47,8 +47,30 @@ function LoginForm() {
 
   // Send OTP via Node server on port 5050
   const handleSendOtp = async () => {
-    if (!identifier.trim()) {
-      toast.error("Please enter your email address.")
+    const trimmed = identifier.trim()
+    if (!trimmed) {
+      toast.error("Please enter your email address or mobile number.")
+      return
+    }
+
+    // Strict validation regex patterns
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const phoneRegex = /^\d{10}$/
+
+    // If input is numeric, validate as a 10-digit phone number
+    if (/^\d+$/.test(trimmed) || trimmed.length <= 10 && !trimmed.includes("@")) {
+      if (!phoneRegex.test(trimmed)) {
+        toast.error("Please enter a valid 10-digit mobile number.")
+        return
+      }
+      // Valid 10-digit mobile number: intercept and notify user gracefully
+      toast.info("Mobile OTP logins are coming soon! Please sign in using your email address for now. 🚀")
+      return
+    }
+
+    // Otherwise, validate as a standard email address
+    if (!emailRegex.test(trimmed)) {
+      toast.error("Please enter a valid email address (e.g., user@example.com).")
       return
     }
 
@@ -57,7 +79,7 @@ function LoginForm() {
       const res = await fetch(`${import.meta.env.VITE_OTP_URL}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: identifier.trim() })
+        body: JSON.stringify({ email: trimmed })
       })
 
       const data = await res.json()
@@ -142,7 +164,7 @@ function LoginForm() {
           {/* IDENTIFIER/EMAIL FIELD */}
           <div className="input-group-custom">
             <input
-              type="email"
+              type="text"
               placeholder="Enter your email or mobile number"
               className="input-field-custom"
               value={identifier}
