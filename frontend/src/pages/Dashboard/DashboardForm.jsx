@@ -14,34 +14,34 @@ function DashboardForm() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [goalEditModal, setGoalEditModal] = useState({ isOpen: false, goal: null, amount: "", date: "" });
 
+  const fetchDashboard = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard?t=${Date.now()}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch dashboard data");
+      }
+
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboard = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/");
-        return;
-      }
-
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard?t=${Date.now()}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
-
-        const json = await res.json();
-        setData(json);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboard();
   }, [navigate]);
 
@@ -75,8 +75,9 @@ function DashboardForm() {
       });
       if (res.ok) {
         alert("Awesome! The AI has been permanently trained to understand this!");
-        // Refresh dashboard immediately
-        window.location.reload();
+        setOverrideModal({ isOpen: false, itemDesc: "" });
+        setOverrideInput("");
+        fetchDashboard();
       } else {
         alert("Failed to override category.");
       }
@@ -100,7 +101,8 @@ function DashboardForm() {
       });
       if (res.ok) {
         alert("Goal Target updated successfully!");
-        window.location.reload();
+        setGoalEditModal({ isOpen: false, goal: null, amount: "", date: "" });
+        fetchDashboard();
       } else {
         alert("Failed to update goal.");
       }
@@ -122,7 +124,7 @@ function DashboardForm() {
         body: JSON.stringify({ id, type })
       });
       if (res.ok) {
-        window.location.reload();
+        fetchDashboard();
       } else {
         alert("Failed to delete transaction.");
       }

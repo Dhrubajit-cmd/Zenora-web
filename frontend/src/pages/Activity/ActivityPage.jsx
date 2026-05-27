@@ -10,29 +10,30 @@ function ActivityPage() {
   const [overrideInput, setOverrideInput] = useState("");
   const [settingsModal, setSettingsModal] = useState(false);
 
+  const fetchActivity = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity?t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        setActivities(json || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchActivity = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/");
-        return;
-      }
-
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity?t=${Date.now()}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          setActivities(json || []);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchActivity();
   }, [navigate]);
 
@@ -66,7 +67,9 @@ function ActivityPage() {
       });
       if (res.ok) {
         alert("Awesome! The AI has been permanently trained to understand this!");
-        window.location.reload();
+        setOverrideModal({ isOpen: false, itemDesc: "" });
+        setOverrideInput("");
+        fetchActivity();
       } else {
         alert("Failed to override category.");
       }
