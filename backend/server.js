@@ -25,12 +25,17 @@ app.post("/send-otp", async (req, res) => {
   }
 
   try {
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: "Zenora <otp@otp.zenoraapp.in>",
       to: email,
       subject: "Zenora OTP Verification",
       html: `<h2>Your OTP is: ${otp}</h2>`
     })
+
+    if (error) {
+      console.log("Resend API Error:", error)
+      return res.json({ success: false, message: error.message })
+    }
 
     res.json({ success: true })
   } catch (err) {
