@@ -16,6 +16,15 @@ function DashboardForm() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [goalEditModal, setGoalEditModal] = useState({ isOpen: false, goal: null, amount: "", date: "" });
 
+  const getSpenderColor = (type) => {
+    if (!type) return "#38bdf8"; // Fallback blue
+    const normalized = type.toLowerCase();
+    if (normalized.includes("saver")) return "#22c55e"; // Vivid Green
+    if (normalized.includes("balanced")) return "#f59e0b"; // Golden Yellow / Orange
+    if (normalized.includes("high spender") || normalized.includes("spender")) return "#ef4444"; // Bold Red
+    return "#38bdf8"; // Default analyzing blue
+  };
+
   const fetchDashboard = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -482,9 +491,25 @@ function DashboardForm() {
           {/* RIGHT COLUMN: SIDE PANEL */}
           <div className="right-panel">
 
-            <div className="side-card ml-card" style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", minHeight: "135px" }}>
-              <p style={{ margin: 0, color: "#94a3b8", fontSize: "14px", textTransform: "uppercase", letterSpacing: "1px" }}>AI Spending Behavior</p>
-              <h2 style={{ margin: "10px 0", color: "#38bdf8", fontSize: "28px" }}>{data?.ml_spender_type || "Analyzing..."}</h2>
+            <div className="side-card ml-card" style={{ 
+              display: "flex", 
+              flexDirection: "column", 
+              justifyContent: "center", 
+              alignItems: "center", 
+              textAlign: "center", 
+              minHeight: "95px",
+              padding: "16px 20px",
+              flex: "none"
+            }}>
+              <p style={{ margin: 0, color: "#94a3b8", fontSize: "12px", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "600" }}>AI Spending Behavior</p>
+              <h2 style={{ 
+                margin: "6px 0 0 0", 
+                color: getSpenderColor(data?.ml_spender_type), 
+                fontSize: "24px",
+                fontWeight: "800"
+              }}>
+                {data?.ml_spender_type || "Analyzing..."}
+              </h2>
             </div>
 
             <div className="side-card" style={{ overflowY: "auto", flex: 2 }}>
