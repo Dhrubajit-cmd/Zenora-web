@@ -15,6 +15,7 @@ function DashboardForm() {
   const [overrideInput, setOverrideInput] = useState("");
   const [settingsModal, setSettingsModal] = useState(false);
   const [goalEditModal, setGoalEditModal] = useState({ isOpen: false, goal: null, amount: "", date: "" });
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, id: null, type: null });
 
   const getSpenderColor = (type) => {
     if (!type) return "#38bdf8"; // Fallback blue
@@ -122,8 +123,14 @@ function DashboardForm() {
     }
   };
 
-  const deleteTransaction = async (id, type) => {
-    if (!window.confirm("Are you sure you want to delete this transaction? Operations and analytics will automatically rebalance.")) return;
+  const promptDeleteTransaction = (id, type) => {
+    setDeleteConfirmModal({ isOpen: true, id, type });
+  };
+
+  const executeDeleteTransaction = async () => {
+    const { id, type } = deleteConfirmModal;
+    if (!id || !type) return;
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/delete`, {
@@ -135,6 +142,7 @@ function DashboardForm() {
         body: JSON.stringify({ id, type })
       });
       if (res.ok) {
+        setDeleteConfirmModal({ isOpen: false, id: null, type: null });
         fetchDashboard();
       } else {
         toast.error("Failed to delete transaction.");
@@ -183,6 +191,60 @@ function DashboardForm() {
 
   return (
     <div className="dashboard-container">
+      {/* REACT CUSTOM DELETE CONFIRMATION MODAL */}
+      {deleteConfirmModal.isOpen && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.7)", backdropFilter: "blur(4px)",
+          display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999
+        }}>
+          <div style={{
+            background: "white", padding: "30px", borderRadius: "16px",
+            width: "90%", maxWidth: "420px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid #cbd5e1"
+          }}>
+            <h3 style={{ margin: "0 0 12px", color: "#b91c1c", display: "flex", alignItems: "center", gap: "8px" }}>
+              ⚠️ Delete Transaction
+            </h3>
+            <p style={{ margin: "0 0 25px", color: "#475569", fontSize: "14px", lineHeight: "1.6" }}>
+              Are you sure you want to delete this transaction? Operations and analytics will automatically rebalance.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <button
+                onClick={() => setDeleteConfirmModal({ isOpen: false, id: null, type: null })}
+                style={{
+                  padding: "10px 20px",
+                  background: "transparent",
+                  color: "#64748b",
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "14px"
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeDeleteTransaction}
+                style={{
+                  padding: "10px 24px",
+                  background: "#ef4444",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  boxShadow: "0 4px 12px rgba(239, 68, 68, 0.15)"
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NATIVE REACT ML MODAL UI */}
       {overrideModal.isOpen && (
         <div style={{
@@ -544,7 +606,7 @@ function DashboardForm() {
                               </span>
                             )}
                             <span
-                              onClick={() => deleteTransaction(act.id, act.type)}
+                              onClick={() => promptDeleteTransaction(act.id, act.type)}
                               style={{ fontSize: "11px", background: "#fef2f2", padding: "3px 8px", borderRadius: "12px", color: "#b91c1c", cursor: "pointer", border: "1px solid #fecaca", fontWeight: "bold" }}
                               title="Delete Transaction"
                             >
