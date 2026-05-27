@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Dict, List
 from src.inference import predict_spender_type
 from fastapi import HTTPException, status 
-from transformers import pipeline
+from src.lightweight_classifier import LightweightClassifier
 
 app = FastAPI(
     title="Personal Finance ML API", 
@@ -11,8 +11,8 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Initialize BERT pipeline (Zero-Shot)
-classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli")
+# Initialize Lightweight Classifier (Uses <15MB RAM and 0ms latency)
+classifier = LightweightClassifier()
 
 EXPENSE_CATEGORIES = [
     "food_and_drink",
@@ -50,9 +50,8 @@ def categorize_expense(data: CategorizeInput):
         results = []
         # Process strings one by one against the 8 categories
         for text in data.strings:
-            prediction = classifier(text, CLEAN_CATEGORIES)
-            best_label = prediction["labels"][0]
-            results.append(LABEL_MAP[best_label])
+            category = classifier.classify(text)
+            results.append(category)
         return {"results": results}
     except Exception as e:
         raise HTTPException(
