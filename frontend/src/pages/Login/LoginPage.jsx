@@ -7,6 +7,18 @@ import "./login.css"
 function LoginPage() {
   useEffect(() => {
     document.title = "Zenora : Website";
+    
+    // ⚡ Silent background pings to pre-warm Render free tier servers on mount
+    // This triggers Render's cold-start behind the scenes, preventing users from seeing the black loading redirect screen!
+    const preWarmServers = () => {
+      const goUrl = import.meta.env.VITE_API_URL;
+      const otpUrl = import.meta.env.VITE_OTP_URL;
+      
+      if (goUrl) fetch(`${goUrl}/`).catch(() => {});
+      if (otpUrl) fetch(`${otpUrl}/`).catch(() => {});
+    };
+
+    preWarmServers();
   }, []);
 
   return (
