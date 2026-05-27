@@ -12,6 +12,25 @@ function LoginForm() {
   const [otp, setOtp] = useState("")
   const [showOtpField, setShowOtpField] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [timer, setTimer] = useState(300) // 5 minutes in seconds
+
+  useEffect(() => {
+    let interval = null
+    if (showOtpField && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1)
+      }, 1000)
+    } else if (timer === 0) {
+      clearInterval(interval)
+    }
+    return () => clearInterval(interval)
+  }, [showOtpField, timer])
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
 
   // Intercept Google OAuth token from URL redirection
   useEffect(() => {
@@ -45,6 +64,7 @@ function LoginForm() {
 
       if (data.success) {
         setShowOtpField(true)
+        setTimer(300) // Reset timer to 5 minutes
         toast.success("Verification OTP sent to your email! ✨")
       } else {
         toast.error("Failed to send OTP. Please ensure your email is correct and the server is running.")
@@ -146,7 +166,7 @@ function LoginForm() {
           {/* SELECTED IDENTIFIER BACK LINK */}
           <div className="selected-identifier-row">
             <span className="selected-identifier-text">{identifier}</span>
-            <button className="change-btn" onClick={() => setShowOtpField(false)} disabled={loading}>
+            <button className="change-btn" onClick={() => { setShowOtpField(false); setTimer(300); }} disabled={loading}>
               Change
             </button>
           </div>
@@ -166,11 +186,50 @@ function LoginForm() {
             />
           </div>
 
+          {/* TIMER & RESEND ROW */}
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            marginTop: "-10px", 
+            marginBottom: "20px", 
+            fontSize: "13px", 
+            fontWeight: "600",
+            fontFamily: "'Inter', sans-serif"
+          }}>
+            {timer > 0 ? (
+              <span style={{ color: timer < 60 ? "#ef4444" : "#64748b" }}>
+                Code expires in <strong style={{ color: timer < 60 ? "#ef4444" : "#1e3a8a" }}>{formatTime(timer)}</strong>
+              </span>
+            ) : (
+              <span style={{ color: "#ef4444" }}>Code expired</span>
+            )}
+            
+            {timer === 0 && (
+              <button 
+                onClick={handleSendOtp} 
+                disabled={loading}
+                style={{ 
+                  background: "transparent", 
+                  color: "#fbbf24", 
+                  border: "none", 
+                  fontWeight: "700", 
+                  cursor: "pointer", 
+                  padding: 0,
+                  fontSize: "13px",
+                  textDecoration: "underline"
+                }}
+              >
+                Resend OTP
+              </button>
+            )}
+          </div>
+
           {/* VERIFY & LOGIN BUTTON */}
           <button
-            className={`continue-btn ${otp.length === 6 ? "active" : ""}`}
+            className={`continue-btn ${otp.length === 6 && timer > 0 ? "active" : ""}`}
             onClick={handleVerifyAndLogin}
-            disabled={otp.length !== 6 || loading}
+            disabled={otp.length !== 6 || loading || timer === 0}
           >
             {loading ? "Verifying..." : "Verify & Log in"}
           </button>

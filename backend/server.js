@@ -28,8 +28,14 @@ app.post("/send-otp", async (req, res) => {
     const { data, error } = await resend.emails.send({
       from: "Zenora <otp@otp.zenoraapp.in>",
       to: email,
-      subject: "Zenora OTP Verification",
-      html: `<h2>Your OTP is: ${otp}</h2>`
+      subject: "OTP Verification for Zenora",
+      html: `<h2>Your OTP for verification is: ${otp}</h2>
+             <p> This OTP will expire in 5 minutes</p>
+             <p> Do not share this OTP with anyone</p>
+             <p> If you did not request this OTP, please ignore this email</p>
+             <p> Thank you for using Zenora</p>
+             <p>Zenora Team</p>
+            `
     })
 
     if (error) {
