@@ -20,6 +20,7 @@ function ActivityPage() {
   const [overrideModal, setOverrideModal] = useState({ isOpen: false, itemDesc: "" });
   const [overrideInput, setOverrideInput] = useState("");
   const [settingsModal, setSettingsModal] = useState(false);
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [profile, setProfile] = useState(() => {
     try {
       const cached = localStorage.getItem("zenora_profile_cache");
@@ -180,6 +181,70 @@ function ActivityPage() {
                 style={{ padding: "10px 16px", background: "#ef4444", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "600" }}
               >
                 Save AI Rule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REACT CUSTOM DELETE ACCOUNT CONFIRMATION MODAL */}
+      {deleteAccountModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(8px)",
+          display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999
+        }}>
+          <div style={{
+            background: "#231b1b", padding: "30px 40px", borderRadius: "24px",
+            width: "90%", maxWidth: "480px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            fontFamily: "'Inter', sans-serif"
+          }}>
+            <h3 style={{ margin: "0 0 16px", color: "white", fontSize: "19px", fontWeight: "700" }}>
+              app.zenoraapp.in says
+            </h3>
+            <p style={{ margin: "0 0 30px", color: "#e2e8f0", fontSize: "15px", lineHeight: "1.6", fontWeight: "500" }}>
+              CAUTION: Are you absolutely sure you want to permanently delete your Zenora account? This action is irreversible.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "16px" }}>
+              <button
+                onClick={() => setDeleteAccountModal(false)}
+                style={{
+                  padding: "12px 28px",
+                  background: "#6b3745",
+                  color: "#ffccd5",
+                  border: "none",
+                  borderRadius: "30px",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                  fontSize: "14px",
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#7f4252"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#6b3745"}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setDeleteAccountModal(false);
+                  toast.error("Account deletion requested. Please contact administrative support to confirm.");
+                }}
+                style={{
+                  padding: "12px 32px",
+                  background: "#fca5a5",
+                  color: "#4c0519",
+                  border: "none",
+                  borderRadius: "30px",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                  fontSize: "14px",
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#fecdd3"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "#fca5a5"}
+              >
+                OK
               </button>
             </div>
           </div>
@@ -417,9 +482,7 @@ function ActivityPage() {
                   <div 
                     onClick={() => { 
                       setProfileDropdown(false); 
-                      if (window.confirm("CAUTION: Are you absolutely sure you want to permanently delete your Zenora account? This action is irreversible.")) {
-                        toast.error("Account deletion requested. Please contact administrative support to confirm.");
-                      }
+                      setDeleteAccountModal(true);
                     }}
                     style={{
                       display: "flex",
