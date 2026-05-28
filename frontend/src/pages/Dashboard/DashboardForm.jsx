@@ -7,8 +7,17 @@ import "./dashboard.css";
 
 function DashboardForm() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(() => {
+    try {
+      const cached = localStorage.getItem("zenora_dashboard_cache");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem("zenora_dashboard_cache");
+  });
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [overrideModal, setOverrideModal] = useState({ isOpen: false, itemDesc: "" });
@@ -45,9 +54,13 @@ function DashboardForm() {
       }
 
       const json = await res.json();
+      localStorage.setItem("zenora_dashboard_cache", JSON.stringify(json));
       setData(json);
     } catch (err) {
-      setError(err.message);
+      console.error("Dashboard cache sync error:", err);
+      if (!data) {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +72,7 @@ function DashboardForm() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("zenora_dashboard_cache");
     navigate("/");
   };
 

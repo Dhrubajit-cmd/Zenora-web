@@ -6,8 +6,17 @@ import "../Dashboard/dashboard.css";
 
 function ActivityPage() {
   const navigate = useNavigate();
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState(() => {
+    try {
+      const cached = localStorage.getItem("zenora_activity_cache");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem("zenora_activity_cache");
+  });
   const [overrideModal, setOverrideModal] = useState({ isOpen: false, itemDesc: "" });
   const [overrideInput, setOverrideInput] = useState("");
   const [settingsModal, setSettingsModal] = useState(false);
@@ -26,10 +35,11 @@ function ActivityPage() {
 
       if (res.ok) {
         const json = await res.json();
+        localStorage.setItem("zenora_activity_cache", JSON.stringify(json || []));
         setActivities(json || []);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Activity cache sync error:", err);
     } finally {
       setLoading(false);
     }
@@ -41,6 +51,8 @@ function ActivityPage() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("zenora_dashboard_cache");
+    localStorage.removeItem("zenora_activity_cache");
     navigate("/");
   };
 
