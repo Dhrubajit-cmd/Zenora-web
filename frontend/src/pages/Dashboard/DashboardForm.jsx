@@ -25,6 +25,47 @@ function DashboardForm() {
   const [settingsModal, setSettingsModal] = useState(false);
   const [goalEditModal, setGoalEditModal] = useState({ isOpen: false, goal: null, amount: "", date: "" });
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, id: null, type: null });
+  const [profile, setProfile] = useState(() => {
+    try {
+      const cached = localStorage.getItem("zenora_profile_cache");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [profileDropdown, setProfileDropdown] = useState(false);
+
+  const getInitials = (nameOrEmail) => {
+    if (!nameOrEmail) return "U";
+    let clean = nameOrEmail.trim();
+    if (clean.includes("@")) {
+      clean = clean.split("@")[0];
+    }
+    const parts = clean.split(/[\s._-]+/);
+    if (parts.length === 0) return "U";
+    if (parts.length === 1) {
+      return parts[0].substring(0, Math.min(parts[0].length, 2)).toUpperCase();
+    }
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        localStorage.setItem("zenora_profile_cache", JSON.stringify(json));
+        setProfile(json);
+      }
+    } catch (e) {
+      console.error("Profile fetch error:", e);
+    }
+  };
 
   const getSpenderColor = (type) => {
     if (!type) return "#38bdf8"; // Fallback blue
@@ -68,11 +109,13 @@ function DashboardForm() {
 
   useEffect(() => {
     fetchDashboard();
+    fetchProfile();
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("zenora_dashboard_cache");
+    localStorage.removeItem("zenora_profile_cache");
     navigate("/");
   };
 
@@ -316,24 +359,31 @@ function DashboardForm() {
           display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999
         }}>
           <div style={{
-            background: "#f4efe8", padding: "30px", borderRadius: "20px",
-            width: "90%", maxWidth: "450px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            background: "white", padding: "30px", borderRadius: "20px",
+            width: "90%", maxWidth: "450px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+            border: "1px solid #e2e8f0"
           }}>
             <h3 style={{ margin: "0 0 5px", color: "#0f172a", fontSize: "22px" }}>Account Settings</h3>
             <p style={{ margin: "0 0 25px", color: "#64748b", fontSize: "14px" }}>Manage your profile and platform preferences.</p>
 
             <div style={{ marginBottom: "20px" }}>
               <label style={{ display: "block", color: "#475569", fontWeight: "600", marginBottom: "8px", fontSize: "14px" }}>Profile Identity</label>
-              <div style={{ background: "white", padding: "12px 16px", borderRadius: "10px", border: "1px solid #cbd5e1", color: "#1e293b", fontWeight: "500", display: "flex", justifyContent: "space-between" }}>
-                <span>User Account</span>
-                <span style={{ color: "#3b82f6" }}>Active</span>
+              <div style={{ background: "white", padding: "12px 16px", borderRadius: "10px", border: "1px solid #cbd5e1", color: "#1e293b", fontWeight: "500", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "#64748b" }}>Username</span>
+                  <span>{profile?.user_name || "User Account"}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #f1f5f9", paddingTop: "8px" }}>
+                  <span style={{ color: "#64748b" }}>Email Address</span>
+                  <span>{profile?.email || "Active"}</span>
+                </div>
               </div>
             </div>
 
             <div style={{ marginBottom: "25px" }}>
               <label style={{ display: "block", color: "#475569", fontWeight: "600", marginBottom: "8px", fontSize: "14px" }}>Visual Theme</label>
               <div style={{ background: "white", padding: "12px 16px", borderRadius: "10px", border: "1px solid #cbd5e1", color: "#1e293b", fontWeight: "500" }}>
-                Moniex Deep Indigo (Active)
+                Zenora Premium Light (Active)
               </div>
             </div>
 
@@ -346,7 +396,7 @@ function DashboardForm() {
               </button>
               <button
                 onClick={handleLogout}
-                style={{ padding: "12px 20px", background: "#191c2b", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "15px" }}
+                style={{ padding: "12px 20px", background: "#1e3a8a", color: "white", border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "600", fontSize: "15px", boxShadow: "0 4px 12px rgba(30, 58, 138, 0.15)" }}
               >
                 Sign Out
               </button>
@@ -440,7 +490,171 @@ function DashboardForm() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <div className="profile" onClick={() => setSettingsModal(true)}>👤 User</div>
+          {/* USER AVATAR WITH DROPDOWN */}
+          <div style={{ position: "relative" }}>
+            <div 
+              className="avatar-circle" 
+              onClick={() => setProfileDropdown(!profileDropdown)}
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: "#0ea5e9",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "700",
+                fontSize: "14px",
+                cursor: "pointer",
+                boxShadow: "0 4px 10px rgba(14, 165, 233, 0.2)",
+                transition: "transform 0.2s ease"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+              onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+            >
+              {getInitials(profile?.user_name || profile?.email || "User")}
+            </div>
+
+            {profileDropdown && (
+              <div style={{
+                position: "absolute",
+                top: "50px",
+                right: "0",
+                width: "280px",
+                background: "white",
+                borderRadius: "16px",
+                boxShadow: "0 10px 30px rgba(15, 23, 42, 0.15)",
+                border: "1px solid #e2e8f0",
+                zIndex: 1000,
+                overflow: "hidden",
+                fontFamily: "'Inter', sans-serif"
+              }}>
+                {/* Header Section */}
+                <div 
+                  onClick={() => { setProfileDropdown(false); setSettingsModal(true); }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "20px",
+                    borderBottom: "1px solid #f1f5f9",
+                    cursor: "pointer",
+                    transition: "background 0.2s"
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "white"}
+                >
+                  <div style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "#0ea5e9",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: "700",
+                    fontSize: "16px",
+                    marginRight: "12px"
+                  }}>
+                    {getInitials(profile?.user_name || profile?.email || "User")}
+                  </div>
+                  <div style={{ flex: 1, overflow: "hidden" }}>
+                    <p style={{ margin: 0, fontWeight: "700", color: "#0f172a", fontSize: "14px", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}>
+                      {profile?.user_name || "Zenora User"}
+                    </p>
+                    <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "500" }}>View Profile</span>
+                  </div>
+                  <span style={{ color: "#64748b", fontWeight: "700", fontSize: "16px" }}>&gt;</span>
+                </div>
+
+                {/* Options List */}
+                <div style={{ padding: "8px 0" }}>
+                  <div 
+                    onClick={() => { setProfileDropdown(false); setSettingsModal(true); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "12px 20px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#475569",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#0f172a"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#475569"; }}
+                  >
+                    <span style={{ marginRight: "12px", fontSize: "16px" }}>👤</span>
+                    View Profile
+                  </div>
+
+                  <div 
+                    onClick={() => { setProfileDropdown(false); toast.info("Zenora Support: Email us at support@zenoraapp.in 🚀"); }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "12px 20px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#475569",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#0f172a"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#475569"; }}
+                  >
+                    <span style={{ marginRight: "12px", fontSize: "16px" }}>💬</span>
+                    Need Help?
+                  </div>
+
+                  <div 
+                    onClick={handleLogout}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "12px 20px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#ef4444",
+                      transition: "background 0.2s",
+                      borderTop: "1px solid #f1f5f9"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "white"}
+                  >
+                    <span style={{ marginRight: "12px", fontSize: "16px" }}>🚪</span>
+                    Logout
+                  </div>
+
+                  <div 
+                    onClick={() => { 
+                      setProfileDropdown(false); 
+                      if (window.confirm("CAUTION: Are you absolutely sure you want to permanently delete your Zenora account? This action is irreversible.")) {
+                        toast.error("Account deletion requested. Please contact administrative support to confirm.");
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "12px 20px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      color: "#ef4444",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "white"}
+                  >
+                    <span style={{ marginRight: "12px", fontSize: "16px" }}>🗑️</span>
+                    Delete Account
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* DASHBOARD BODY */}
