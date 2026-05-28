@@ -283,7 +283,13 @@ function InvestmentsPage() {
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#0f172a"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "white"; e.currentTarget.style.color = "#475569"; }}
                   >
-                    <span style={{ marginRight: "12px", fontSize: "16px" }}>💬</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
+                      <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H18L22 22V4C22 2.9 21.1 2 20 2Z" fill="#007aff" />
+                      <rect x="5" y="6" width="9" height="2" rx="0.5" fill="white" />
+                      <rect x="5" y="10" width="9" height="2" rx="0.5" fill="white" />
+                      <rect x="5" y="14" width="6" height="2" rx="0.5" fill="white" />
+                      <path d="M18.78 4.8C18.49 4.51 18.01 4.51 17.72 4.8L16.34 6.18L18.42 8.26L19.8 6.88C20.09 6.59 20.09 6.11 19.8 5.82L18.78 4.8ZM15.63 6.89L9.5 13.02V15.1H11.58L17.71 8.97L15.63 6.89Z" fill="white" />
+                    </svg>
                     Need Help?
                   </div>
 
@@ -303,7 +309,10 @@ function InvestmentsPage() {
                     onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
                     onMouseLeave={(e) => e.currentTarget.style.background = "white"}
                   >
-                    <span style={{ marginRight: "12px", fontSize: "16px" }}>🚪</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
+                      <path d="M5 3C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H13C14.1 21 15 20.1 15 19V16H13V19H5V5H13V8H15V5C15 3.9 14.1 3 13 3H5Z" fill="#ff3b30" />
+                      <path d="M19 12L15 8V11H9V13H15V16L19 12Z" fill="#ff3b30" />
+                    </svg>
                     Logout
                   </div>
 
@@ -327,7 +336,10 @@ function InvestmentsPage() {
                     onMouseEnter={(e) => e.currentTarget.style.background = "#fef2f2"}
                     onMouseLeave={(e) => e.currentTarget.style.background = "white"}
                   >
-                    <span style={{ marginRight: "12px", fontSize: "16px" }}>🗑️</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "12px" }}>
+                      <path d="M15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="#007aff" />
+                      <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM9 9H11V18H9V9ZM13 9H15V18H13V9Z" fill="#007aff" />
+                    </svg>
                     Delete Account
                   </div>
                 </div>
