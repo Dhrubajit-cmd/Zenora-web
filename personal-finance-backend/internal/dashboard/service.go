@@ -43,11 +43,12 @@ func GetDashboardData(userID int) (*DashboardResponse, error) {
 		Other:            breakdown["other"],
 	}
 
-	// 0.0 values naturally feed successfully if categories are empty.
-	spenderType := "Unknown"
-	mlResult, mlErr := mlclient.PredictSpender(input)
-	if mlErr == nil && mlResult != nil {
-		spenderType = mlResult.SpenderType
+	spenderType := "Analyzing..."
+	if metrics["total_expenses"] > 0 {
+		mlResult, mlErr := mlclient.PredictSpender(input)
+		if mlErr == nil && mlResult != nil {
+			spenderType = mlResult.SpenderType
+		}
 	}
 
 	currentBalance := metrics["total_income"] - metrics["total_expenses"] - metrics["total_investments"]

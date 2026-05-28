@@ -108,10 +108,13 @@ def predict_spender(data: ExpenseInput):
         data.other 
     ) 
     if total_expense <= 0: 
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Total expense must be greater than zero."
-        )
+        return {
+            "status": "success",
+            "data": {
+                "spender_type": "Analyzing..."
+            },
+            "error": None
+        }
     try: 
        # Convert API KEYS to ML KEYS : 
        ml_input = {
