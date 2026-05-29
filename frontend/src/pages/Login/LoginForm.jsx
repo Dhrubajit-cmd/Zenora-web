@@ -34,22 +34,39 @@ function LoginForm() {
 
   // Auto-redirect if already logged in or if token parameter is present
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("zenora_logged_in") === "true"
+    const checkSession = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
+          credentials: "include"
+        });
+        if (res.ok) {
+          localStorage.setItem("zenora_logged_in", "true");
+          navigate("/dashboard");
+        }
+      } catch (e) {
+        console.error("Session check error:", e);
+      }
+    };
+
+    const isLoggedIn = localStorage.getItem("zenora_logged_in") === "true";
     if (isLoggedIn) {
-      navigate("/dashboard")
-      return
+      navigate("/dashboard");
+      return;
     }
 
-    const params = new URLSearchParams(window.location.search)
-    const token = params.get("token")
+    // Check if browser already has an active secure session (e.g. after Google callback redirect)
+    checkSession();
+
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
     if (token) {
-      localStorage.setItem("zenora_logged_in", "true")
+      localStorage.setItem("zenora_logged_in", "true");
       // Clean up token from URL browser bar history
-      window.history.replaceState({}, document.title, window.location.pathname)
-      toast.success("Login successful! Welcome to Zenora. 🚀")
-      navigate("/dashboard")
+      window.history.replaceState({}, document.title, window.location.pathname);
+      toast.success("Login successful! Welcome to Zenora. 🚀");
+      navigate("/dashboard");
     }
-  }, [navigate])
+  }, [navigate]);
 
   // Send OTP via Node server on port 5050
   const handleSendOtp = async () => {

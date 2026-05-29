@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -103,11 +102,10 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	setTokenCookie(w, jwtToken) // Write secure HttpOnly Cookie
 
-	// Redirect back to React Frontend cleanly (no query params!)
+	// Redirect back to React Frontend root cleanly (no query params!)
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:5173"
 	}
-	redirectURL := fmt.Sprintf("%s/dashboard", frontendURL)
-	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, frontendURL, http.StatusTemporaryRedirect)
 }
