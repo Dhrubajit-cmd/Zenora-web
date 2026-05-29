@@ -135,7 +135,6 @@ function LoginForm() {
       const verifyRes = await fetch(`${import.meta.env.VITE_OTP_URL}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email: identifier.trim(), otp: otp.trim() })
       })
 
