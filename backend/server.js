@@ -5,7 +5,21 @@ const { Resend } = require("resend")
 const cors = require("cors")
 
 const app = express()
-app.use(cors())
+
+// 🛡️ Strict CORS Whitelist for OTP Service
+const allowedOrigins = ["http://localhost:5173", "https://app.zenoraapp.in"]
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like server-to-server or testing tools)
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = "The CORS policy for this site does not allow access from the specified Origin."
+      return callback(new Error(msg), false)
+    }
+    return callback(null, true)
+  }
+}))
+
 app.use(express.json())
 
 let otpStore = {}
