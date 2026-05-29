@@ -20,12 +20,18 @@ import (
 
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		origin := r.Header.Get("Origin")
+		if origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		}
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 
 		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 
@@ -51,6 +57,7 @@ func main() {
 	http.HandleFunc("/auth/register", auth.RegisterHandler)
 	http.HandleFunc("/auth/login", auth.LoginHandler)
 	http.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
+	http.HandleFunc("/auth/logout", auth.LogoutHandler)
 	http.HandleFunc("/api/profile", middleware.AuthMiddleware(auth.ProfileHandler))
 	http.HandleFunc("/api/dashboard", middleware.AuthMiddleware(dashboard.DashboardHandler))
 	mux := http.NewServeMux()
@@ -59,6 +66,7 @@ func main() {
 	mux.HandleFunc("/auth/register", auth.RegisterHandler)
 	mux.HandleFunc("/auth/login", auth.LoginHandler)
 	mux.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
+	mux.HandleFunc("/auth/logout", auth.LogoutHandler)
 
 	//  Google OAuth
 	mux.HandleFunc("/auth/google/login", auth.GoogleLoginHandler)

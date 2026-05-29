@@ -52,16 +52,16 @@ function DashboardForm() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: "include"
       });
       if (res.ok) {
         const json = await res.json();
         localStorage.setItem("zenora_profile_cache", JSON.stringify(json));
+        localStorage.setItem("zenora_logged_in", "true");
         setProfile(json);
+      } else if (res.status === 401) {
+        handleLogout();
       }
     } catch (e) {
       console.error("Profile fetch error:", e);
@@ -78,20 +78,16 @@ function DashboardForm() {
   };
 
   const fetchDashboard = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/dashboard?t=${Date.now()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include"
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          handleLogout();
+          return;
+        }
         throw new Error("Failed to fetch dashboard data");
       }
 
@@ -109,12 +105,25 @@ function DashboardForm() {
   };
 
   useEffect(() => {
+    const isLoggedIn = localStorage.getItem("zenora_logged_in") === "true";
+    if (!isLoggedIn) {
+      navigate("/");
+      return;
+    }
     fetchDashboard();
     fetchProfile();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (e) {
+      console.error("Logout request failed:", e);
+    }
+    localStorage.removeItem("zenora_logged_in");
     localStorage.removeItem("zenora_dashboard_cache");
     localStorage.removeItem("zenora_profile_cache");
     navigate("/");
@@ -131,13 +140,12 @@ function DashboardForm() {
     if (!override || override.trim() === "") return;
 
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ml/override`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify({
           raw_text: rawText,
           corrected_category: override.toLowerCase().replace(/ /g, "_")
@@ -157,12 +165,12 @@ function DashboardForm() {
   };
 
   const submitGoalEdit = async () => {
-    const token = localStorage.getItem("token");
     if (!goalEditModal.amount || !goalEditModal.date) return;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/goals/update`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           goal_id: goalEditModal.goal.id,
           target_amount: parseFloat(goalEditModal.amount),
@@ -190,13 +198,12 @@ function DashboardForm() {
     if (!id || !type) return;
 
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/delete`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json"
         },
+        credentials: "include",
         body: JSON.stringify({ id, type })
       });
       if (res.ok) {

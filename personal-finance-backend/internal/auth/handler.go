@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"personal-finance-backend/internal/models"
 
@@ -82,6 +83,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setTokenCookie(w, token) // Write secure HttpOnly Cookie
+
 	response := map[string]interface{}{
 		"message": "Login successful",
 		"token":   token,
@@ -141,6 +144,8 @@ func OTPLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setTokenCookie(w, token) // Write secure HttpOnly Cookie
+
 	response := map[string]interface{}{
 		"message": "Login successful",
 		"token":   token,
@@ -170,4 +175,52 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func setTokenCookie(w http.ResponseWriter, token string) {
+	secure := false
+	if os.Getenv("COOKIE_SECURE") == "true" || os.Getenv("ENV") == "production" {
+		secure = true
+	}
+
+	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   7 * 24 * 60 * 60, // 7 days in seconds
+		HttpOnly: true,
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	if cookieDomain != "" {
+		cookie.Domain = cookieDomain
+	}
+
+	http.SetCookie(w, cookie)
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1, // Instantly expire cookie
+		HttpOnly: true,
+		Secure:   os.Getenv("COOKIE_SECURE") == "true" || os.Getenv("ENV") == "production",
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	if cookieDomain != "" {
+		cookie.Domain = cookieDomain
+	}
+
+	http.SetCookie(w, cookie)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message":"Logged out successfully"}`))
 }

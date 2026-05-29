@@ -101,11 +101,13 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Redirect back to React Frontend with the token in query parameter
+	setTokenCookie(w, jwtToken) // Write secure HttpOnly Cookie
+
+	// Redirect back to React Frontend cleanly (no query params!)
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:5173"
 	}
-	redirectURL := fmt.Sprintf("%s/?token=%s", frontendURL, jwtToken)
+	redirectURL := fmt.Sprintf("%s/dashboard", frontendURL)
 	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }

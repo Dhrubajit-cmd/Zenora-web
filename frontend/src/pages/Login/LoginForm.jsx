@@ -32,12 +32,18 @@ function LoginForm() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  // Intercept Google OAuth token from URL redirection
+  // Auto-redirect if already logged in or if token parameter is present
   useEffect(() => {
+    const isLoggedIn = localStorage.getItem("zenora_logged_in") === "true"
+    if (isLoggedIn) {
+      navigate("/dashboard")
+      return
+    }
+
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
     if (token) {
-      localStorage.setItem("token", token)
+      localStorage.setItem("zenora_logged_in", "true")
       // Clean up token from URL browser bar history
       window.history.replaceState({}, document.title, window.location.pathname)
       toast.success("Login successful! Welcome to Zenora. 🚀")
@@ -112,6 +118,7 @@ function LoginForm() {
       const verifyRes = await fetch(`${import.meta.env.VITE_OTP_URL}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: identifier.trim(), otp: otp.trim() })
       })
 
@@ -122,6 +129,7 @@ function LoginForm() {
         const loginRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/otp-login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email: identifier.trim() })
         })
 
@@ -129,7 +137,7 @@ function LoginForm() {
 
         if (loginRes.ok) {
           toast.success("Login successful! Welcome to Zenora. 🚀")
-          localStorage.setItem("token", loginData?.token)
+          localStorage.setItem("zenora_logged_in", "true")
           navigate("/dashboard")
         } else {
           toast.error(loginData?.error || "Failed to log in. Please try again.")

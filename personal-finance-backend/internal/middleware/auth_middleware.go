@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -15,22 +14,14 @@ const UserIDKey contextKey = "user_id"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// 1. Get Authorization header :
-		authHeader := r.Header.Get("Authorization")
-
-		if authHeader == "" {
-			http.Error(w, "Missing Token", http.StatusUnauthorized)
+		// 1. Get Session Token from secure HttpOnly Cookie :
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Error(w, "Missing session token cookie", http.StatusUnauthorized)
 			return
 		}
 
-		// 2. Format : Bearer <token>
-		parts := strings.Split(authHeader, " ")
-
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			http.Error(w, "Invalid Authorization header format", http.StatusUnauthorized)
-			return
-		}
-		tokenString := parts[1]
+		tokenString := cookie.Value
 
 		// 3; Parse Token :
 		secret := os.Getenv("JWT_SECRET")

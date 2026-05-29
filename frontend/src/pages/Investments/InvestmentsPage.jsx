@@ -36,16 +36,16 @@ function InvestmentsPage() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: "include"
       });
       if (res.ok) {
         const json = await res.json();
         localStorage.setItem("zenora_profile_cache", JSON.stringify(json));
+        localStorage.setItem("zenora_logged_in", "true");
         setProfile(json);
+      } else if (res.status === 401) {
+        handleLogout();
       }
     } catch (e) {
       console.error("Profile fetch error:", e);
@@ -54,20 +54,16 @@ function InvestmentsPage() {
 
   useEffect(() => {
     const fetchInvestments = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/");
-        return;
-      }
-
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/investments/all`, {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
         });
 
         if (res.ok) {
           const json = await res.json();
           setInvestments(json || []);
+        } else if (res.status === 401) {
+          handleLogout();
         }
       } catch (err) {
         console.error(err);
@@ -75,12 +71,26 @@ function InvestmentsPage() {
         setLoading(false);
       }
     };
+
+    const isLoggedIn = localStorage.getItem("zenora_logged_in") === "true";
+    if (!isLoggedIn) {
+      navigate("/");
+      return;
+    }
     fetchInvestments();
     fetchProfile();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+      });
+    } catch (e) {
+      console.error("Logout request failed:", e);
+    }
+    localStorage.removeItem("zenora_logged_in");
     localStorage.removeItem("zenora_dashboard_cache");
     localStorage.removeItem("zenora_activity_cache");
     localStorage.removeItem("zenora_profile_cache");
