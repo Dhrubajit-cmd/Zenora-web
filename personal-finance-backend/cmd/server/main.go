@@ -21,12 +21,21 @@ import (
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		if origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-		} else {
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+
+		// 🛡️ Strict Whitelist of Authorized Origins
+		allowedOrigins := map[string]bool{
+			"http://localhost:5173":     true,
+			"https://app.zenoraapp.in": true,
 		}
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		} else {
+			// Malicious or unauthorized origin: Deny credentials and set a safe fallback origin
+			w.Header().Set("Access-Control-Allow-Origin", "https://app.zenoraapp.in")
+		}
+
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 
