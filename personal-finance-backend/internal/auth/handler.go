@@ -182,8 +182,14 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 	secure := true
 
 	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+	// Normalize domain format to allow wildcard subdomain sharing in all browsers
+	if cookieDomain == "api.zenoraapp.in" || cookieDomain == "app.zenoraapp.in" ||
+		cookieDomain == "https://app.zenoraapp.in" || cookieDomain == "https://api.zenoraapp.in" ||
+		cookieDomain == "zenoraapp.in" {
+		cookieDomain = ".zenoraapp.in"
+	}
 	if cookieDomain == "" && os.Getenv("ENV") != "development" {
-		cookieDomain = "zenoraapp.in"
+		cookieDomain = ".zenoraapp.in"
 	}
 
 	cookie := &http.Cookie{
@@ -205,8 +211,13 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+	if cookieDomain == "api.zenoraapp.in" || cookieDomain == "app.zenoraapp.in" ||
+		cookieDomain == "https://app.zenoraapp.in" || cookieDomain == "https://api.zenoraapp.in" ||
+		cookieDomain == "zenoraapp.in" {
+		cookieDomain = ".zenoraapp.in"
+	}
 	if cookieDomain == "" && os.Getenv("ENV") != "development" {
-		cookieDomain = "zenoraapp.in"
+		cookieDomain = ".zenoraapp.in"
 	}
 
 	cookie := &http.Cookie{

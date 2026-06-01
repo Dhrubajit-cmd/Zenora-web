@@ -24,7 +24,7 @@ func enableCORS(next http.Handler) http.Handler {
 
 		// 🛡️ Strict Whitelist of Authorized Origins
 		allowedOrigins := map[string]bool{
-			"http://localhost:5173":     true,
+			"http://localhost:5173":    true,
 			"https://app.zenoraapp.in": true,
 		}
 
@@ -32,8 +32,9 @@ func enableCORS(next http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 		} else {
-			// Malicious or unauthorized origin: Deny credentials and set a safe fallback origin
+			// Fallback: Always allow credentials for the production React client securely
 			w.Header().Set("Access-Control-Allow-Origin", "https://app.zenoraapp.in")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
 		}
 
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie")
