@@ -27,6 +27,15 @@ let otpStore = {}
 // Initialize Resend Client
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// Health Check Endpoints for keep-alive monitoring
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" })
+})
+
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "healthy" })
+})
+
 // Send OTP
 app.post("/send-otp", async (req, res) => {
   const { email } = req.body

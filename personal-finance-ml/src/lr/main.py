@@ -18,6 +18,10 @@ CORS(app)
 def home():
     return jsonify({"status": "ML API running"})
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "healthy"})
+
 @app.route("/plot", methods=["POST"])
 def plot_api():
     try:

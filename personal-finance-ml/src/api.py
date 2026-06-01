@@ -38,6 +38,14 @@ CLEAN_CATEGORIES = [
 
 LABEL_MAP = {clean: raw for clean, raw in zip(CLEAN_CATEGORIES, EXPENSE_CATEGORIES)}
 
+@app.get("/health", status_code=status.HTTP_200_OK)
+def health_check():
+    return {"status": "healthy"}
+
+@app.get("/", status_code=status.HTTP_200_OK)
+def root_check():
+    return {"status": "healthy"}
+
 class CategorizeInput(BaseModel):
     strings: List[str]
 
