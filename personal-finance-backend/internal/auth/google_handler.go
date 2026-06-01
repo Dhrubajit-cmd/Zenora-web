@@ -102,10 +102,13 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	setTokenCookie(w, jwtToken) // Write secure HttpOnly Cookie
 
-	// Redirect back to React Frontend root cleanly (no query params!)
+	// Redirect back to React Frontend with token query parameter as a secure fallback
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:5173"
 	}
-	http.Redirect(w, r, frontendURL, http.StatusTemporaryRedirect)
+	
+	// Append token parameter for frontend auto-login fallback
+	redirectTarget := frontendURL + "?token=" + jwtToken
+	http.Redirect(w, r, redirectTarget, http.StatusTemporaryRedirect)
 }

@@ -178,7 +178,7 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func setTokenCookie(w http.ResponseWriter, token string) {
-	// For secure cross-site cookies in production, Secure must be true and SameSite=None
+	// For secure same-site subdomain sharing, use SameSite=Lax and Secure=true
 	secure := true
 
 	cookieDomain := os.Getenv("COOKIE_DOMAIN")
@@ -190,7 +190,7 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 		MaxAge:   7 * 24 * 60 * 60, // 7 days in seconds
 		HttpOnly: true,
 		Secure:   secure,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	if cookieDomain != "" {
@@ -210,7 +210,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1, // Instantly expire cookie
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	if cookieDomain != "" {
