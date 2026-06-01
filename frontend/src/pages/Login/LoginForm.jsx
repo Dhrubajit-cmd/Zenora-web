@@ -99,6 +99,9 @@ function LoginForm() {
 
     setLoading(true)
     try {
+      // ⚡ Silent background ping to pre-warm Go backend server during the OTP delivery window
+      fetch(`${import.meta.env.VITE_API_URL}/`).catch(() => {});
+
       const res = await fetch(`${import.meta.env.VITE_OTP_URL}/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

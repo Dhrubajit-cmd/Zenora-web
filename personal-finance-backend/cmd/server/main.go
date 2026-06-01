@@ -71,6 +71,10 @@ func main() {
 	http.HandleFunc("/api/dashboard", middleware.AuthMiddleware(dashboard.DashboardHandler))
 	mux := http.NewServeMux()
 
+	//  Health check routes
+	mux.HandleFunc("/health", auth.HealthHandler)
+	mux.HandleFunc("/api/health", auth.HealthHandler)
+
 	//  Auth routes
 	mux.HandleFunc("/auth/register", auth.RegisterHandler)
 	mux.HandleFunc("/auth/login", auth.LoginHandler)
