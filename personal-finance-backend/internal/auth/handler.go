@@ -182,6 +182,9 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 	secure := true
 
 	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+	if cookieDomain == "" && os.Getenv("ENV") != "development" {
+		cookieDomain = "zenoraapp.in"
+	}
 
 	cookie := &http.Cookie{
 		Name:     "token",
@@ -202,6 +205,9 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	cookieDomain := os.Getenv("COOKIE_DOMAIN")
+	if cookieDomain == "" && os.Getenv("ENV") != "development" {
+		cookieDomain = "zenoraapp.in"
+	}
 
 	cookie := &http.Cookie{
 		Name:     "token",
