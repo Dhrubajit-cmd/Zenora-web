@@ -3,8 +3,12 @@ require("dotenv").config()
 const express = require("express")
 const { Resend } = require("resend")
 const cors = require("cors")
+const rateLimit = require("express-rate-limit")
 
 const app = express()
+
+// Trust reverse proxy (Render, Cloudflare, etc.) to get correct client IP for rate limiting
+app.set("trust proxy", 1)
 
 // 🛡️ Strict CORS Whitelist for OTP Service
 const allowedOrigins = ["http://localhost:5173", "https://app.zenoraapp.in"]
@@ -22,6 +26,24 @@ app.use(cors({
 
 app.use(express.json())
 
+// Rate limiter for sending OTP (max 5 requests per hour per IP)
+const otpSendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { success: false, message: "Too many OTP requests from this IP. Please try again after an hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+// Rate limiter for verifying OTP (max 10 verification attempts per 10 minutes per IP)
+const otpVerifyLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10,
+  message: { verified: false, message: "Too many verification attempts. Please try again after 10 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
 let otpStore = {}
 
 // Initialize Resend Client
@@ -37,7 +59,7 @@ app.get("/", (req, res) => {
 })
 
 // Send OTP
-app.post("/send-otp", async (req, res) => {
+app.post("/send-otp", otpSendLimiter, async (req, res) => {
   const { email } = req.body
 
   if (!email || !email.trim()) {
@@ -84,7 +106,7 @@ app.post("/send-otp", async (req, res) => {
 })
 
 // Verify OTP
-app.post("/verify-otp", (req, res) => {
+app.post("/verify-otp", otpVerifyLimiter, (req, res) => {
   const { email, otp } = req.body
 
   if (!email || !otp) {

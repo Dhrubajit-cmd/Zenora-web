@@ -107,5 +107,5 @@ func main() {
 	mux.HandleFunc("/api/ml/retrain", handler.RetrainMLHandler)
 
 	//  Server start
-	http.ListenAndServe(":"+port, enableCORS(mux))
+	http.ListenAndServe(":"+port, enableCORS(middleware.RateLimitMiddleware(mux)))
 }
