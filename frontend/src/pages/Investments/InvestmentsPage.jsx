@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo/logo.png";
 import { toast } from "../../utils/toast";
@@ -18,6 +18,21 @@ function InvestmentsPage() {
     }
   });
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
 
   const getInitials = (nameOrEmail) => {
@@ -111,6 +126,7 @@ function InvestmentsPage() {
             <li onClick={() => navigate("/transactions")}>Transactions</li>
             <li className="active">Investments</li>
             <li onClick={() => navigate("/activity")}>Activity</li>
+            <li onClick={() => navigate("/insights")} style={{ cursor: "pointer" }}>Insights</li>
           </ul>
         </div>
         
@@ -245,7 +261,7 @@ function InvestmentsPage() {
         <div className="header">
           <h2 style={{ margin: 0 }}>My Investments</h2>
           {/* USER AVATAR WITH DROPDOWN */}
-          <div style={{ position: "relative" }}>
+          <div ref={profileDropdownRef} style={{ position: "relative" }}>
             <div 
               className="avatar-circle" 
               onClick={() => setProfileDropdown(!profileDropdown)}

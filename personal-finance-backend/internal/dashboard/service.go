@@ -1,8 +1,8 @@
 package dashboard
 
 import (
-	"personal-finance-backend/internal/mlclient"
 	"personal-finance-backend/internal/models"
+	"personal-finance-backend/pkg/ml"
 )
 
 type DashboardResponse struct {
@@ -32,23 +32,9 @@ func GetDashboardData(userID int) (*DashboardResponse, error) {
 	goals, _ := GetActiveGoals(userID)
 	recent, _ := GetRecentActivity(userID, 100)
 
-	input := mlclient.ExpenseInput{
-		FoodAndDrink:     breakdown["food_and_drink"],
-		Rent:             breakdown["rent"],
-		Utilities:        breakdown["utilities"],
-		Entertainment:    breakdown["entertainment"],
-		Travel:           breakdown["travel"],
-		HealthAndFitness: breakdown["health_and_fitness"],
-		Shopping:         breakdown["shopping"],
-		Other:            breakdown["other"],
-	}
-
 	spenderType := "Analyzing..."
 	if metrics["total_expenses"] > 0 {
-		mlResult, mlErr := mlclient.PredictSpender(input)
-		if mlErr == nil && mlResult != nil {
-			spenderType = mlResult.SpenderType
-		}
+		spenderType = ml.PredictSpenderType(breakdown)
 	}
 
 	currentBalance := metrics["total_income"] - metrics["total_expenses"] - metrics["total_investments"]

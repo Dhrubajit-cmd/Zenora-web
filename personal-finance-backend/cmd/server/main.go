@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"personal-finance-backend/pkg/database"
+	"personal-finance-backend/pkg/crypto"
 
 	"personal-finance-backend/internal/auth"
 
@@ -53,6 +54,11 @@ func main() {
 	// Load local .env file if present, but ignore error in cloud environment (like Render)
 	_ = godotenv.Load()
 
+	// Initialize envelope encryption master key
+	if err := crypto.LoadMasterKey(); err != nil {
+		log.Fatal("Error loading encryption key: ", err)
+	}
+
 	err := database.ConnectDB()
 	if err != nil {
 		log.Fatal("Error connecting to the database: ", err)
@@ -64,12 +70,7 @@ func main() {
 	}
 	log.Printf("Server running on port %s\n", port)
 
-	http.HandleFunc("/auth/register", auth.RegisterHandler)
-	http.HandleFunc("/auth/login", auth.LoginHandler)
-	http.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
-	http.HandleFunc("/auth/logout", auth.LogoutHandler)
-	http.HandleFunc("/api/profile", middleware.AuthMiddleware(auth.ProfileHandler))
-	http.HandleFunc("/api/dashboard", middleware.AuthMiddleware(dashboard.DashboardHandler))
+
 	mux := http.NewServeMux()
 
 	//  Health check routes
@@ -81,6 +82,8 @@ func main() {
 	mux.HandleFunc("/auth/login", auth.LoginHandler)
 	mux.HandleFunc("/auth/otp-login", auth.OTPLoginHandler)
 	mux.HandleFunc("/auth/logout", auth.LogoutHandler)
+	mux.HandleFunc("/auth/send-otp", auth.SendOTPHandler)
+	mux.HandleFunc("/auth/verify-otp", auth.VerifyOTPHandler)
 
 	//  Google OAuth
 	mux.HandleFunc("/auth/google/login", auth.GoogleLoginHandler)
@@ -93,6 +96,7 @@ func main() {
 	//  Onboarding + Finance routes
 	mux.HandleFunc("/api/onboarding", middleware.AuthMiddleware(handler.OnboardingBatchHandler))
 	mux.HandleFunc("/api/expenses", middleware.AuthMiddleware(handler.CreateExpenseHandler))
+	mux.HandleFunc("/api/expenses/batch", middleware.AuthMiddleware(handler.CreateExpensesBatchHandler))
 	mux.HandleFunc("/api/incomes", middleware.AuthMiddleware(handler.CreateIncomeHandler))
 	mux.HandleFunc("/api/investments", middleware.AuthMiddleware(handler.CreateInvestmentHandler))
 	mux.HandleFunc("/api/investments/all", middleware.AuthMiddleware(handler.GetInvestmentsHandler))
@@ -100,11 +104,10 @@ func main() {
 	mux.HandleFunc("/api/goals/update", middleware.AuthMiddleware(handler.UpdateGoalHandler))
 	mux.HandleFunc("/api/activity", middleware.AuthMiddleware(handler.GetActivityHandler))
 	mux.HandleFunc("/api/activity/delete", middleware.AuthMiddleware(handler.DeleteActivityHandler))
+	mux.HandleFunc("/api/insights/email-report", middleware.AuthMiddleware(handler.EmailReportHandler))
 
 	//  ML Override (NEW from incoming)
 	mux.HandleFunc("/api/ml/override", middleware.AuthMiddleware(handler.CreateOverrideHandler))
-	mux.HandleFunc("/api/ml/predict", handler.PredictMLHandler)
-	mux.HandleFunc("/api/ml/retrain", handler.RetrainMLHandler)
 
 	//  Server start
 	http.ListenAndServe(":"+port, enableCORS(middleware.RateLimitMiddleware(mux)))

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as PieTooltip, BarChart, Bar, XAxis, Tooltip as BarTooltip } from "recharts";
 import logo from "../../assets/logo/logo.png";
 import { toast } from "../../utils/toast";
+import { predictSpenderType } from "../../utils/ml/ml_predictor";
 import "./dashboard.css";
 
 function DashboardForm() {
@@ -35,6 +36,21 @@ function DashboardForm() {
     }
   });
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   const getInitials = (nameOrEmail) => {
     if (!nameOrEmail) return "U";
@@ -197,30 +213,176 @@ function DashboardForm() {
     const { id, type } = deleteConfirmModal;
     if (!id || !type) return;
 
+    // OPTIMISTIC UPDATE: Store current state for rolling back on API failure
+    const previousData = { ...data };
+
+    if (data) {
+      // 1. Remove transaction from local activity feed
+      const updatedActivity = data.recent_activity.filter(
+        (act) => !(act.id === id && act.type === type)
+      );
+
+      // 2. Locate the deleted transaction to deduct its amount from totals
+      const deletedTx = data.recent_activity.find(
+        (act) => act.id === id && act.type === type
+      );
+
+      let updatedIncome = data.total_income;
+      let updatedExpenses = data.total_expenses;
+      let updatedInvestments = data.total_investments;
+      const updatedBreakdown = { ...data.expense_breakdown };
+
+      if (deletedTx) {
+        const amt = deletedTx.amount;
+        if (type === "expense") {
+          updatedExpenses = Math.max(0, updatedExpenses - amt);
+          const cat = deletedTx.category;
+          if (updatedBreakdown[cat]) {
+            updatedBreakdown[cat] = Math.max(0, updatedBreakdown[cat] - amt);
+          }
+        } else if (type === "income") {
+          updatedIncome = Math.max(0, updatedIncome - amt);
+        } else if (type === "investment") {
+          updatedInvestments = Math.max(0, updatedInvestments - amt);
+        }
+      }
+
+      const updatedBalance = updatedIncome - updatedExpenses - updatedInvestments;
+      const updatedNetWorth = updatedBalance + updatedInvestments;
+
+      // 3. Recalculate spending behavior K-Means cluster locally
+      const newSpenderType = predictSpenderType(updatedBreakdown).spender_type;
+
+      setData({
+        ...data,
+        total_income: updatedIncome,
+        total_expenses: updatedExpenses,
+        total_investments: updatedInvestments,
+        current_balance: updatedBalance,
+        total_net_worth: updatedNetWorth,
+        expense_breakdown: updatedBreakdown,
+        ml_spender_type: newSpenderType,
+        recent_activity: updatedActivity,
+      });
+    }
+
+    setDeleteConfirmModal({ isOpen: false, id: null, type: null });
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/activity/delete`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ id, type })
+        body: JSON.stringify({ id, type }),
       });
       if (res.ok) {
-        setDeleteConfirmModal({ isOpen: false, id: null, type: null });
-        fetchDashboard();
+        toast.success("Transaction deleted successfully!");
+        fetchDashboard(); // Fetch in background to ensure strict sync
       } else {
         toast.error("Failed to delete transaction.");
+        setData(previousData); // Rollback local state
       }
     } catch (err) {
       toast.error("Network error.");
+      setData(previousData); // Rollback local state
     }
   };
 
   if (loading) {
     return (
-      <div className="dashboard-container" style={{ alignItems: "center", justifyContent: "center", color: "white" }}>
-        <h2>Loading your financial intelligence...</h2>
+      <div className="dashboard-container">
+        {/* Sidebar Skeleton */}
+        <div className="sidebar" style={{ background: "#1e3a8a", opacity: 0.8 }}>
+          <div className="logo">
+            <div className="skeleton-pulse" style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(255,255,255,0.2)" }} />
+            <div className="skeleton-pulse" style={{ width: "80px", height: "24px", background: "rgba(255,255,255,0.2)" }} />
+          </div>
+          <ul className="menu" style={{ width: "100%" }}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <li key={i} style={{ display: "block", height: "40px", background: "rgba(255,255,255,0.06)", marginBottom: "8px", borderRadius: "12px" }}>
+                <div className="skeleton-pulse" style={{ width: "60%", height: "16px", margin: "12px 18px", background: "rgba(255,255,255,0.15)" }} />
+              </li>
+            ))}
+          </ul>
+          <div className="sidebar-bottom">
+            <div className="skeleton-pulse" style={{ width: "100px", height: "16px", margin: "12px 18px", background: "rgba(255,255,255,0.15)" }} />
+          </div>
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="main-wrapper">
+          <div className="header">
+            <div className="skeleton-pulse" style={{ width: "350px", height: "40px", borderRadius: "30px" }} />
+            <div className="skeleton-pulse" style={{ width: "40px", height: "40px", borderRadius: "50%" }} />
+          </div>
+
+          <div className="dashboard-body">
+            <div className="main-content">
+              {/* Cards row */}
+              <div className="cards">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="card" style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "26px" }}>
+                    <div className="skeleton-pulse" style={{ width: "40%", height: "14px" }} />
+                    <div className="skeleton-pulse" style={{ width: "70%", height: "28px" }} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Charts row */}
+              <div className="charts">
+                <div className="chart-box" style={{ height: "260px" }}>
+                  <div className="skeleton-pulse" style={{ width: "50%", height: "18px", marginBottom: "15px" }} />
+                  <div style={{ display: "flex", justifyContent: "center", margin: "10px 0" }}>
+                    <div className="skeleton-pulse" style={{ width: "110px", height: "110px", borderRadius: "50%" }} />
+                  </div>
+                  <div className="skeleton-pulse" style={{ width: "80%", height: "12px", marginTop: "15px" }} />
+                </div>
+                <div className="chart-box" style={{ height: "260px" }}>
+                  <div className="skeleton-pulse" style={{ width: "50%", height: "18px", marginBottom: "15px" }} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "15px" }}>
+                    {[1, 2, 3].map(i => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
+                        <div className="skeleton-pulse" style={{ width: "40%", height: "14px" }} />
+                        <div className="skeleton-pulse" style={{ width: "20%", height: "14px" }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cashflow card */}
+              <div className="cashflow">
+                <div className="skeleton-pulse" style={{ width: "30%", height: "18px", marginBottom: "15px" }} />
+                <div className="skeleton-pulse" style={{ width: "100%", height: "120px" }} />
+              </div>
+            </div>
+
+            {/* Right Panel */}
+            <div className="right-panel">
+              <div className="side-card ml-card" style={{ background: "#1e3a8a" }}>
+                <div className="skeleton-pulse" style={{ width: "40%", height: "12px", margin: "0 auto 10px", background: "rgba(255,255,255,0.2)" }} />
+                <div className="skeleton-pulse" style={{ width: "60%", height: "24px", margin: "0 auto", background: "rgba(255,255,255,0.2)" }} />
+              </div>
+
+              <div className="side-card" style={{ padding: "26px" }}>
+                <div className="skeleton-pulse" style={{ width: "50%", height: "18px", marginBottom: "20px" }} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ flex: 1 }}>
+                        <div className="skeleton-pulse" style={{ width: "60%", height: "14px", marginBottom: "6px" }} />
+                        <div className="skeleton-pulse" style={{ width: "30%", height: "10px" }} />
+                      </div>
+                      <div className="skeleton-pulse" style={{ width: "60px", height: "18px" }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -539,6 +701,7 @@ function DashboardForm() {
             <li onClick={() => navigate("/transactions")} style={{ cursor: "pointer" }}>Transactions</li>
             <li onClick={() => navigate("/investments")} style={{ cursor: "pointer" }}>Investments</li>
             <li onClick={() => navigate("/activity")} style={{ cursor: "pointer" }}>Activity</li>
+            <li onClick={() => navigate("/insights")} style={{ cursor: "pointer" }}>Insights</li>
           </ul>
         </div>
 
@@ -563,7 +726,7 @@ function DashboardForm() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {/* USER AVATAR WITH DROPDOWN */}
-          <div style={{ position: "relative" }}>
+          <div ref={profileDropdownRef} style={{ position: "relative" }}>
             <div 
               className="avatar-circle" 
               onClick={() => setProfileDropdown(!profileDropdown)}

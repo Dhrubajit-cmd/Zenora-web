@@ -4,6 +4,7 @@ import (
 	"context"
 	"personal-finance-backend/internal/models"
 	"personal-finance-backend/pkg/database"
+	"personal-finance-backend/pkg/crypto"
 )
 
 func GetExpenseBreakdown(userID int) (map[string]float64, error) {
@@ -117,6 +118,9 @@ func GetRecentActivity(userID int, limit int) ([]models.Activity, error) {
 	for rows.Next() {
 		var a models.Activity
 		if err := rows.Scan(&a.ID, &a.Type, &a.Description, &a.Category, &a.Amount, &a.Date); err == nil {
+			if dec, errDec := crypto.Decrypt(a.Description, userID); errDec == nil {
+				a.Description = dec
+			}
 			activities = append(activities, a)
 		}
 	}

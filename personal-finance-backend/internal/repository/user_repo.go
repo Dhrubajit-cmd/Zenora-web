@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"personal-finance-backend/pkg/database"
+	"personal-finance-backend/pkg/crypto"
 
 	"personal-finance-backend/internal/models"
 )
@@ -42,6 +43,19 @@ func GetUserByEmailOrUsername(identifier string) (*models.User, error) {
 		fmt.Printf("Login scan error: %v\n", err)
 		return nil, errors.New("user not found")
 	}
+
+	// Decrypt sensitive fields
+	if user.Phone != "" {
+		if dec, err := crypto.Decrypt(user.Phone, user.UserID); err == nil {
+			user.Phone = dec
+		}
+	}
+	if user.Address != "" {
+		if dec, err := crypto.Decrypt(user.Address, user.UserID); err == nil {
+			user.Address = dec
+		}
+	}
+
 	return &user, nil
 }
 
@@ -56,14 +70,40 @@ Steps :
 */
 
 func CreateUser(user *models.User) (int, error) {
-	query := `Insert into users (user_name, email, phone, address, password_hashed, currency, auth_provider) values ($1,$2,$3,$4,$5,$6,'local') returning user_id`
+	// 1. Insert user details first to generate user_id
+	query := `Insert into users (user_name, email, password_hashed, currency, auth_provider) values ($1,$2,$3,$4,'local') returning user_id`
 
 	var userID int
-
-	err := database.DB.QueryRow(context.Background(), query, user.UserName, user.Email, user.Phone, user.Address, user.PasswordHashed, user.Currency).Scan(&userID)
+	err := database.DB.QueryRow(context.Background(), query, user.UserName, user.Email, user.PasswordHashed, user.Currency).Scan(&userID)
 	if err != nil {
 		return 0, err
 	}
+
+	// 2. Encrypt and update phone/address if present
+	if user.Phone != "" || user.Address != "" {
+		var encryptedPhone, encryptedAddress string
+		var cryptErr error
+
+		if user.Phone != "" {
+			encryptedPhone, cryptErr = crypto.Encrypt(user.Phone, userID)
+			if cryptErr != nil {
+				return userID, cryptErr
+			}
+		}
+		if user.Address != "" {
+			encryptedAddress, cryptErr = crypto.Encrypt(user.Address, userID)
+			if cryptErr != nil {
+				return userID, cryptErr
+			}
+		}
+
+		updateQuery := `UPDATE users SET phone = $1, address = $2 WHERE user_id = $3`
+		_, err = database.DB.Exec(context.Background(), updateQuery, encryptedPhone, encryptedAddress, userID)
+		if err != nil {
+			return userID, err
+		}
+	}
+
 	return userID, nil
 }
 
@@ -112,6 +152,18 @@ func GetUserByID(userID int) (*models.User, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	// Decrypt sensitive fields
+	if user.Phone != "" {
+		if dec, err := crypto.Decrypt(user.Phone, userID); err == nil {
+			user.Phone = dec
+		}
+	}
+	if user.Address != "" {
+		if dec, err := crypto.Decrypt(user.Address, userID); err == nil {
+			user.Address = dec
+		}
 	}
 
 	return &user, nil

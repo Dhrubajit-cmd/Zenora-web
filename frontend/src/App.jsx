@@ -13,6 +13,7 @@ import DashboardPage from "./pages/Dashboard/DashboardPage";
 import TransactionsPage from "./pages/Transactions/TransactionsPage";
 import ActivityPage from "./pages/Activity/ActivityPage";
 import InvestmentsPage from "./pages/Investments/InvestmentsPage";
+import InsightsTab from "./pages/Insights/InsightsTab";
 
 
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/investments" element={<InvestmentsPage />} />
+        <Route path="/insights" element={<InsightsTab />} />
 
 
       </Routes>

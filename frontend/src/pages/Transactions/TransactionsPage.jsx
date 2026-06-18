@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo/logo.png";
 import { toast } from "../../utils/toast";
+import { classifyExpense } from "../../utils/ml/ml_predictor";
 import "../Dashboard/dashboard.css"; // Reuse dashboard styling
 
 function TransactionsPage() {
@@ -24,6 +25,21 @@ function TransactionsPage() {
     }
   });
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
 
   const getInitials = (nameOrEmail) => {
@@ -94,7 +110,8 @@ function TransactionsPage() {
 
     if (activeTab === "expense") {
       endpoint = `${import.meta.env.VITE_API_URL}/api/expenses`;
-      payload = { amount: parseFloat(amount), description: description };
+      const localCategory = classifyExpense(description);
+      payload = { amount: parseFloat(amount), description: description, category: localCategory };
     } else if (activeTab === "income") {
       endpoint = `${import.meta.env.VITE_API_URL}/api/incomes`;
       payload = { amount: parseFloat(amount), source: description };
@@ -145,6 +162,7 @@ function TransactionsPage() {
             <li className="active">Transactions</li>
             <li onClick={() => navigate("/investments")} style={{ cursor: "pointer" }}>Investments</li>
             <li onClick={() => navigate("/activity")} style={{ cursor: "pointer" }}>Activity</li>
+            <li onClick={() => navigate("/insights")} style={{ cursor: "pointer" }}>Insights</li>
           </ul>
         </div>
         
@@ -280,7 +298,7 @@ function TransactionsPage() {
         <div className="header">
           <h2 style={{ margin: 0 }}>Add Transaction</h2>
           {/* USER AVATAR WITH DROPDOWN */}
-          <div style={{ position: "relative" }}>
+          <div ref={profileDropdownRef} style={{ position: "relative" }}>
             <div 
               className="avatar-circle" 
               onClick={() => setProfileDropdown(!profileDropdown)}

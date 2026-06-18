@@ -253,3 +253,37 @@ h4 {
     flex-direction: column;
   }
 }
+
+/* ==========================================================================
+   💀 PREMIUM SKELETON UI LOADING ANIMATION
+   ========================================================================== */
+.skeleton-pulse {
+  background: #e2e8f0;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-pulse::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-load-pulse 1.6s infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes skeleton-load-pulse {
+  100% {
+    transform: translateX(100%);
+  }
+}

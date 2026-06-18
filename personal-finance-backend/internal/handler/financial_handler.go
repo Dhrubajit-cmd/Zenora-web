@@ -1,12 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 	"personal-finance-backend/internal/middleware"
-	"personal-finance-backend/internal/mlclient"
 	"personal-finance-backend/internal/models"
 	"personal-finance-backend/internal/repository"
 	"personal-finance-backend/internal/dashboard"
@@ -37,11 +39,11 @@ func OnboardingBatchHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := range payload.Expenses {
 		payload.Expenses[i].UserID = userID
-		rawLower := strings.ToLower(payload.Expenses[i].Category)
+		rawLower := strings.ToLower(payload.Expenses[i].Description)
 		if override, exists := repository.GetOverride(userID, rawLower); exists {
 			payload.Expenses[i].Category = override
-		} else {
-			payload.Expenses[i].Category = mlclient.CategorizeExpense(payload.Expenses[i].Category)
+		} else if payload.Expenses[i].Category == "" {
+			payload.Expenses[i].Category = "other"
 		}
 	}
 	_ = repository.CreateExpensesBatch(payload.Expenses)
@@ -89,8 +91,8 @@ func CreateExpenseHandler(w http.ResponseWriter, r *http.Request) {
 	rawLower := strings.ToLower(expense.Description)
 	if override, exists := repository.GetOverride(userID, rawLower); exists {
 		expense.Category = override
-	} else {
-		expense.Category = mlclient.CategorizeExpense(expense.Description)
+	} else if expense.Category == "" {
+		expense.Category = "other"
 	}
 
 	if err := repository.CreateExpense(expense); err != nil {
@@ -102,6 +104,44 @@ func CreateExpenseHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{"message":"Expense created successfully"}`))
 }
+
+func CreateExpensesBatchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var expenses []models.Expense
+	if err := json.NewDecoder(r.Body).Decode(&expenses); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	for i := range expenses {
+		expenses[i].UserID = userID
+		if expenses[i].ExpenseDate == "" {
+			expenses[i].ExpenseDate = time.Now().Format("2006-01-02")
+		}
+		rawLower := strings.ToLower(expenses[i].Description)
+		if override, exists := repository.GetOverride(userID, rawLower); exists {
+			expenses[i].Category = override
+		} else if expenses[i].Category == "" {
+			expenses[i].Category = "other"
+		}
+	}
+
+	if err := repository.CreateExpensesBatch(expenses); err != nil {
+		http.Error(w, "Failed to create expenses batch", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{"message":"Expenses batch created successfully"}`))
+}
+
 
 func CreateIncomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -284,5 +324,121 @@ func DeleteActivityHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message":"Transaction deleted successfully"}`))
+}
+
+type resendAttachment struct {
+	Filename string `json:"filename"`
+	Content  string `json:"content"`
+}
+
+type resendEmailPayload struct {
+	From        string             `json:"from"`
+	To          []string           `json:"to"`
+	Subject     string             `json:"subject"`
+	HTML        string             `json:"html"`
+	Attachments []resendAttachment `json:"attachments,omitempty"`
+}
+
+func sendPDFEmail(email, pdfBase64 string) error {
+	apiKey := os.Getenv("RESEND_API_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("RESEND_API_KEY is not configured")
+	}
+
+	payload := resendEmailPayload{
+		From:    "Zenora <insights@otp.zenoraapp.in>",
+		To:      []string{email},
+		Subject: "Your Zenora Financial Insights Report",
+		HTML: `
+			<div style="font-family: sans-serif; color: #1e293b; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+				<h2 style="color: #1e3a8a; margin-top: 0;">Your Zenora Insights Report is Ready</h2>
+				<p>Hello,</p>
+				<p>Please find your password-protected monthly financial insights report attached to this email.</p>
+				<p>To open the PDF, use your secure profile password key (comprising the last 4 characters of your username followed by the 2-digit signup/current month, e.g. <code>****06</code>).</p>
+				<p>If you did not request this report, please ignore this email or contact support.</p>
+				<br/>
+				<p>Best Regards,</p>
+				<p><strong>Zenora Team</strong></p>
+			</div>
+		`,
+		Attachments: []resendAttachment{
+			{
+				Filename: "Zenora-Financial-Insights.pdf",
+				Content:  pdfBase64,
+			},
+		},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		var resendErr map[string]interface{}
+		_ = json.NewDecoder(resp.Body).Decode(&resendErr)
+		return fmt.Errorf("resend failed with status %d: %v", resp.StatusCode, resendErr)
+	}
+
+	return nil
+}
+
+type EmailReportRequest struct {
+	PDFBase64 string `json:"pdf_base64"`
+}
+
+func EmailReportHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var req EmailReportRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if req.PDFBase64 == "" {
+		http.Error(w, "Missing PDF data", http.StatusBadRequest)
+		return
+	}
+
+	user, err := repository.GetUserByID(userID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve user details", http.StatusInternalServerError)
+		return
+	}
+
+	if user.Email == "" {
+		http.Error(w, "User email address is not registered", http.StatusBadRequest)
+		return
+	}
+
+	if err := sendPDFEmail(user.Email, req.PDFBase64); err != nil {
+		http.Error(w, "Failed to send email: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message":"Report emailed successfully"}`))
 }
 
