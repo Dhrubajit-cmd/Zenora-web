@@ -7,8 +7,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"personal-finance-backend/pkg/database"
 	"personal-finance-backend/pkg/crypto"
+	"personal-finance-backend/pkg/database"
 
 	"personal-finance-backend/internal/auth"
 
@@ -27,6 +27,7 @@ func enableCORS(next http.Handler) http.Handler {
 		allowedOrigins := map[string]bool{
 			"http://localhost:5173":    true,
 			"https://app.zenoraapp.in": true,
+			"https://api.zenoraapp.in": true,
 		}
 
 		if allowedOrigins[origin] {
@@ -69,7 +70,6 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Server running on port %s\n", port)
-
 
 	mux := http.NewServeMux()
 
