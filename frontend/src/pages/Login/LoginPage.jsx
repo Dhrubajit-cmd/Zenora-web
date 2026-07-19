@@ -12,10 +12,8 @@ function LoginPage() {
     // This triggers Render's cold-start behind the scenes, preventing users from seeing the black loading redirect screen!
     const preWarmServers = () => {
       const goUrl = import.meta.env.VITE_API_URL;
-      const otpUrl = import.meta.env.VITE_OTP_URL;
       
       if (goUrl) fetch(`${goUrl}/`).catch(() => {});
-      if (otpUrl) fetch(`${otpUrl}/`).catch(() => {});
     };
 
     preWarmServers();

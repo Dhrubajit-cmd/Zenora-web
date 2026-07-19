@@ -63,7 +63,7 @@ function LoginForm() {
       localStorage.setItem("zenora_logged_in", "true");
       // Clean up token from URL browser bar history
       window.history.replaceState({}, document.title, window.location.pathname);
-      toast.success("Login successful! Welcome to Zenora. 🚀");
+      toast.success("Welcome to Zenora. 🚀");
       navigate("/dashboard");
     }
   }, [navigate]);
@@ -100,9 +100,9 @@ function LoginForm() {
     setLoading(true)
     try {
       // ⚡ Silent background ping to pre-warm Go backend server during the OTP delivery window
-      fetch(`${import.meta.env.VITE_API_URL}/`).catch(() => {});
+      fetch(`${import.meta.env.VITE_API_URL}/`).catch(() => { });
 
-      const res = await fetch(`${import.meta.env.VITE_OTP_URL}/send-otp`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: trimmed })
@@ -134,8 +134,8 @@ function LoginForm() {
 
     setLoading(true)
     try {
-      // 1. Verify OTP with Node Server (Port 5050)
-      const verifyRes = await fetch(`${import.meta.env.VITE_OTP_URL}/verify-otp`, {
+      // 1. Verify OTP with Go Backend
+      const verifyRes = await fetch(`${import.meta.env.VITE_API_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: identifier.trim(), otp: otp.trim() })
@@ -236,13 +236,13 @@ function LoginForm() {
           </div>
 
           {/* TIMER & RESEND ROW */}
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "center", 
-            marginTop: "-10px", 
-            marginBottom: "20px", 
-            fontSize: "13px", 
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "-10px",
+            marginBottom: "20px",
+            fontSize: "13px",
             fontWeight: "600",
             fontFamily: "'Inter', sans-serif"
           }}>
@@ -253,17 +253,17 @@ function LoginForm() {
             ) : (
               <span style={{ color: "#ef4444" }}>Code expired</span>
             )}
-            
+
             {timer === 0 && (
-              <button 
-                onClick={handleSendOtp} 
+              <button
+                onClick={handleSendOtp}
                 disabled={loading}
-                style={{ 
-                  background: "transparent", 
-                  color: "#fbbf24", 
-                  border: "none", 
-                  fontWeight: "700", 
-                  cursor: "pointer", 
+                style={{
+                  background: "transparent",
+                  color: "#fbbf24",
+                  border: "none",
+                  fontWeight: "700",
+                  cursor: "pointer",
                   padding: 0,
                   fontSize: "13px",
                   textDecoration: "underline"
