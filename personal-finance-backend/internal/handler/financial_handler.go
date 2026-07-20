@@ -142,6 +142,36 @@ func CreateExpensesBatchHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"message":"Expenses batch created successfully"}`))
 }
 
+func CreateIncomesBatchHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.Context().Value(middleware.UserIDKey).(int)
+
+	var incomes []models.Income
+	if err := json.NewDecoder(r.Body).Decode(&incomes); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	for i := range incomes {
+		incomes[i].UserID = userID
+		if incomes[i].IncomeDate == "" {
+			incomes[i].IncomeDate = time.Now().Format("2006-01-02")
+		}
+	}
+
+	if err := repository.CreateIncomesBatch(incomes); err != nil {
+		http.Error(w, "Failed to create incomes batch", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{"message":"Incomes batch created successfully"}`))
+}
 
 func CreateIncomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {

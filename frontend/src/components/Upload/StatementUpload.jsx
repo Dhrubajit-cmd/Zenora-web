@@ -118,8 +118,14 @@ function StatementUpload({ onSaveComplete, onClose }) {
           return /credit|deposit|cr\b/i.test(h);
         });
 
-        const amountIdx = headers.findIndex((h, idx) => {
+        const typeIdx = headers.findIndex((h, idx) => {
           if (idx === dateIdx || idx === descIdx || idx === debitIdx || idx === creditIdx) return false;
+          if (/date|time|dt\b/i.test(h)) return false;
+          return /type|mode|dr.*cr/i.test(h);
+        });
+
+        const amountIdx = headers.findIndex((h, idx) => {
+          if (idx === dateIdx || idx === descIdx || idx === debitIdx || idx === creditIdx || idx === typeIdx) return false;
           if (/date|time|dt\b/i.test(h)) return false;
           return /amount|value|spent|outflow|inflow|charge|price|payment/i.test(h);
         });
@@ -137,19 +143,38 @@ function StatementUpload({ onSaveComplete, onClose }) {
           const rawDate = dateIdx !== -1 ? row[dateIdx] : null;
           const rawDesc = descIdx !== -1 ? row[descIdx] : null;
           
+          let transactionType = "expense"; // default
           let rawAmount = null;
+
           if (amountIdx !== -1) {
-            const val = String(row[amountIdx] || "").replace(/[^0-9.-]/g, "");
-            rawAmount = parseFloat(val);
+            const valStr = String(row[amountIdx] || "");
+            const isNegative = valStr.includes("-");
+            const val = parseFloat(valStr.replace(/[^0-9.-]/g, ""));
+            rawAmount = val;
+
+            if (typeIdx !== -1) {
+              const typeStr = String(row[typeIdx] || "").toLowerCase();
+              if (typeStr.includes("cr") || typeStr.includes("credit") || typeStr.includes("dep") || typeStr.includes("in")) {
+                transactionType = "income";
+              } else if (typeStr.includes("dr") || typeStr.includes("debit") || typeStr.includes("wdr") || typeStr.includes("out")) {
+                transactionType = "expense";
+              }
+            } else if (isNegative || val < 0) {
+              transactionType = "expense";
+              rawAmount = Math.abs(val);
+            }
           } else {
             const debStr = debitIdx !== -1 ? String(row[debitIdx] || "").replace(/[^0-9.-]/g, "") : "";
             const credStr = creditIdx !== -1 ? String(row[creditIdx] || "").replace(/[^0-9.-]/g, "") : "";
             const debVal = parseFloat(debStr);
             const credVal = parseFloat(credStr);
+
             if (!isNaN(debVal) && debVal !== 0) {
               rawAmount = debVal;
+              transactionType = "expense";
             } else if (!isNaN(credVal) && credVal !== 0) {
               rawAmount = credVal;
+              transactionType = "income";
             }
           }
 
@@ -180,7 +205,8 @@ function StatementUpload({ onSaveComplete, onClose }) {
             expense_date: transactionDate.toISOString().split("T")[0],
             description,
             amount,
-            category
+            category: transactionType === "income" ? "" : category,
+            type: transactionType
           });
         }
 
@@ -218,23 +244,58 @@ function StatementUpload({ onSaveComplete, onClose }) {
     setIsSaving(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/expenses/batch`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(transactions),
-        credentials: "include"
-      });
+      const expensesPayload = transactions
+        .filter(tx => tx.type === "expense")
+        .map(tx => ({
+          category: tx.category,
+          description: tx.description,
+          amount: tx.amount,
+          expense_date: tx.expense_date
+        }));
 
-      if (res.ok) {
-        toast.success("Statements uploaded and saved successfully!");
-        if (onSaveComplete) {
-          onSaveComplete();
+      const incomesPayload = transactions
+        .filter(tx => tx.type === "income")
+        .map(tx => ({
+          source: tx.description,
+          amount: tx.amount,
+          income_date: tx.expense_date
+        }));
+
+      // 1. Save expenses if any
+      if (expensesPayload.length > 0) {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/expenses/batch`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(expensesPayload),
+          credentials: "include"
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to save expenses statement batch");
         }
-      } else {
-        const text = await res.text();
-        throw new Error(text || "Failed to save statement batch");
+      }
+
+      // 2. Save incomes if any
+      if (incomesPayload.length > 0) {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/incomes/batch`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(incomesPayload),
+          credentials: "include"
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to save incomes statement batch");
+        }
+      }
+
+      toast.success("Statements uploaded and saved successfully!");
+      if (onSaveComplete) {
+        onSaveComplete();
       }
     } catch (err) {
       console.error("Batch save error:", err);
@@ -319,6 +380,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
                 <thead style={{ position: "sticky", top: 0, background: "#f8fafc", borderBottom: "2px solid #e2e8f0", zIndex: 10 }}>
                   <tr>
                     <th style={{ padding: "12px 16px", fontWeight: "600", color: "#475569" }}>Date</th>
+                    <th style={{ padding: "12px 16px", fontWeight: "600", color: "#475569", width: "100px" }}>Type</th>
                     <th style={{ padding: "12px 16px", fontWeight: "600", color: "#475569" }}>Description</th>
                     <th style={{ padding: "12px 16px", fontWeight: "600", color: "#475569" }}>Amount (₹)</th>
                     <th style={{ padding: "12px 16px", fontWeight: "600", color: "#475569" }}>Category (Edge AI)</th>
@@ -327,14 +389,33 @@ function StatementUpload({ onSaveComplete, onClose }) {
                 </thead>
                 <tbody>
                   {transactions.map((tx, idx) => (
-                    <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9", background: tx.type === "income" ? "#fbfdfb" : "transparent" }}>
                       <td style={{ padding: "8px 16px" }}>
                         <input
-                          type="date"
-                          value={tx.expense_date}
-                          onChange={(e) => handleValueChange(idx, "expense_date", e.target.value)}
-                          style={{ border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px", fontSize: "13px" }}
+                           type="date"
+                           value={tx.expense_date}
+                           onChange={(e) => handleValueChange(idx, "expense_date", e.target.value)}
+                           style={{ border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px", fontSize: "13px" }}
                         />
+                      </td>
+                      <td style={{ padding: "8px 16px" }}>
+                        <select
+                          value={tx.type}
+                          onChange={(e) => handleValueChange(idx, "type", e.target.value)}
+                          style={{
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "8px",
+                            padding: "6px 10px",
+                            background: tx.type === "income" ? "#f0fdf4" : "#fef2f2",
+                            color: tx.type === "income" ? "#15803d" : "#b91c1c",
+                            fontWeight: "700",
+                            fontSize: "12px",
+                            cursor: "pointer"
+                          }}
+                        >
+                          <option value="expense" style={{ color: "#b91c1c" }}>Expense</option>
+                          <option value="income" style={{ color: "#15803d" }}>Income</option>
+                        </select>
                       </td>
                       <td style={{ padding: "8px 16px" }}>
                         <input
@@ -353,18 +434,22 @@ function StatementUpload({ onSaveComplete, onClose }) {
                         />
                       </td>
                       <td style={{ padding: "8px 16px" }}>
-                        <select
-                          value={tx.category}
-                          onChange={(e) => handleValueChange(idx, "category", e.target.value)}
-                          style={{
-                            border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px",
-                            background: "white", fontSize: "13px", fontWeight: "500", cursor: "pointer"
-                          }}
-                        >
-                          {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-                            <option key={k} value={k}>{v}</option>
-                          ))}
-                        </select>
+                        {tx.type === "income" ? (
+                          <span style={{ fontSize: "13px", color: "#94a3b8", fontWeight: "600", paddingLeft: "10px" }}>Income (N/A)</span>
+                        ) : (
+                          <select
+                            value={tx.category}
+                            onChange={(e) => handleValueChange(idx, "category", e.target.value)}
+                            style={{
+                              border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px",
+                              background: "white", fontSize: "13px", fontWeight: "500", cursor: "pointer"
+                            }}
+                          >
+                            {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
+                              <option key={k} value={k}>{v}</option>
+                            ))}
+                          </select>
+                        )}
                       </td>
                       <td style={{ padding: "8px 16px", textAlign: "center" }}>
                         <button

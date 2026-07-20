@@ -97,6 +97,7 @@ func main() {
 	mux.HandleFunc("/api/onboarding", middleware.AuthMiddleware(handler.OnboardingBatchHandler))
 	mux.HandleFunc("/api/expenses", middleware.AuthMiddleware(handler.CreateExpenseHandler))
 	mux.HandleFunc("/api/expenses/batch", middleware.AuthMiddleware(handler.CreateExpensesBatchHandler))
+	mux.HandleFunc("/api/incomes/batch", middleware.AuthMiddleware(handler.CreateIncomesBatchHandler))
 	mux.HandleFunc("/api/incomes", middleware.AuthMiddleware(handler.CreateIncomeHandler))
 	mux.HandleFunc("/api/investments", middleware.AuthMiddleware(handler.CreateInvestmentHandler))
 	mux.HandleFunc("/api/investments/all", middleware.AuthMiddleware(handler.GetInvestmentsHandler))
