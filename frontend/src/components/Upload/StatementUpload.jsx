@@ -3,6 +3,58 @@ import * as XLSX from "xlsx";
 import { classifyExpense } from "../../utils/ml/ml_predictor";
 import { toast } from "../../utils/toast";
 
+function parseTransactionDate(rawDate) {
+  if (!rawDate) return new Date();
+  
+  if (typeof rawDate === "number") {
+    const utcDays = Math.floor(rawDate - 25569);
+    const utcValue = utcDays * 86400;
+    return new Date(utcValue * 1000);
+  }
+
+  const str = String(rawDate).trim();
+  if (!str) return new Date();
+
+  // Try standard ISO parsing first
+  const isoCheck = new Date(str);
+  if (!isNaN(isoCheck.getTime())) {
+    return isoCheck;
+  }
+
+  const parts = str.split(/[\/\-\.\s]+/);
+  if (parts.length === 3) {
+    let day, month, year;
+    const monthNames = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+    const getMonthNum = (mStr) => {
+      const clean = mStr.toLowerCase().substring(0, 3);
+      const idx = monthNames.indexOf(clean);
+      return idx !== -1 ? idx + 1 : parseInt(mStr, 10);
+    };
+
+    if (parts[0].length === 4) {
+      year = parseInt(parts[0], 10);
+      month = getMonthNum(parts[1]);
+      day = parseInt(parts[2], 10);
+    } else if (parts[2].length === 4 || parts[2].length === 2) {
+      day = parseInt(parts[0], 10);
+      month = getMonthNum(parts[1]);
+      year = parseInt(parts[2], 10);
+      if (parts[2].length === 2) {
+        year += year < 50 ? 2000 : 1900;
+      }
+    }
+
+    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+      const d = new Date(year, month - 1, day, 12, 0, 0);
+      if (!isNaN(d.getTime())) {
+        return d;
+      }
+    }
+  }
+
+  return new Date();
+}
+
 const CATEGORY_LABELS = {
   food_and_drink: "Food & Drink",
   rent: "Rent",
@@ -59,7 +111,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
         const workbook = XLSX.read(data, { type: "array" });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        
+
         // Read headers first to recognize columns
         const rawRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         if (rawRows.length < 2) {
@@ -99,7 +151,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
         }
 
         const dateIdx = headers.findIndex(h => /date|time|val.*dt|txn.*dt|post.*dt|booking.*dt/i.test(h));
-        
+
         const descIdx = headers.findIndex((h, idx) => {
           if (idx === dateIdx) return false;
           if (/date|time|dt\b/i.test(h)) return false;
@@ -142,7 +194,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
 
           const rawDate = dateIdx !== -1 ? row[dateIdx] : null;
           const rawDesc = descIdx !== -1 ? row[descIdx] : null;
-          
+
           let transactionType = "expense"; // default
           let rawAmount = null;
 
@@ -182,20 +234,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
             continue;
           }
 
-          let transactionDate = new Date();
-          if (rawDate) {
-            if (typeof rawDate === "number") {
-              // Handle Excel serial date format
-              const utcDays = Math.floor(rawDate - 25569);
-              const utcValue = utcDays * 86400;
-              transactionDate = new Date(utcValue * 1000);
-            } else {
-              const checkDate = new Date(rawDate);
-              if (!isNaN(checkDate.getTime())) {
-                transactionDate = checkDate;
-              }
-            }
-          }
+          const transactionDate = parseTransactionDate(rawDate);
 
           const description = String(rawDesc).trim();
           const amount = Math.abs(parseFloat(rawAmount));
@@ -392,10 +431,10 @@ function StatementUpload({ onSaveComplete, onClose }) {
                     <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9", background: tx.type === "income" ? "#fbfdfb" : "transparent" }}>
                       <td style={{ padding: "8px 16px" }}>
                         <input
-                           type="date"
-                           value={tx.expense_date}
-                           onChange={(e) => handleValueChange(idx, "expense_date", e.target.value)}
-                           style={{ border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px", fontSize: "13px" }}
+                          type="date"
+                          value={tx.expense_date}
+                          onChange={(e) => handleValueChange(idx, "expense_date", e.target.value)}
+                          style={{ border: "1px solid #cbd5e1", borderRadius: "8px", padding: "6px 10px", fontSize: "13px" }}
                         />
                       </td>
                       <td style={{ padding: "8px 16px" }}>
