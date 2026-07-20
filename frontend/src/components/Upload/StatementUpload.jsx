@@ -99,10 +99,30 @@ function StatementUpload({ onSaveComplete, onClose }) {
         }
 
         const dateIdx = headers.findIndex(h => /date|time|val.*dt|txn.*dt|post.*dt|booking.*dt/i.test(h));
-        const descIdx = headers.findIndex(h => /desc|particular|merchant|detail|payee|narrative|remark|txn.*desc|transaction|narratives/i.test(h));
-        const amountIdx = headers.findIndex(h => /amount|value|spent|outflow|inflow|charge|price|payment/i.test(h));
-        const debitIdx = headers.findIndex(h => /debit|withdrawal|dr\b/i.test(h));
-        const creditIdx = headers.findIndex(h => /credit|deposit|cr\b/i.test(h));
+        
+        const descIdx = headers.findIndex((h, idx) => {
+          if (idx === dateIdx) return false;
+          if (/date|time|dt\b/i.test(h)) return false;
+          return /desc|particular|merchant|detail|payee|narrative|remark|txn.*desc|transaction|narratives/i.test(h);
+        });
+
+        const debitIdx = headers.findIndex((h, idx) => {
+          if (idx === dateIdx || idx === descIdx) return false;
+          if (/date|time|dt\b/i.test(h)) return false;
+          return /debit|withdrawal|dr\b/i.test(h);
+        });
+
+        const creditIdx = headers.findIndex((h, idx) => {
+          if (idx === dateIdx || idx === descIdx) return false;
+          if (/date|time|dt\b/i.test(h)) return false;
+          return /credit|deposit|cr\b/i.test(h);
+        });
+
+        const amountIdx = headers.findIndex((h, idx) => {
+          if (idx === dateIdx || idx === descIdx || idx === debitIdx || idx === creditIdx) return false;
+          if (/date|time|dt\b/i.test(h)) return false;
+          return /amount|value|spent|outflow|inflow|charge|price|payment/i.test(h);
+        });
 
         if (descIdx === -1 || (amountIdx === -1 && debitIdx === -1 && creditIdx === -1)) {
           toast.error("Could not auto-detect Description or Amount columns. Please make sure headers exist in the file.");

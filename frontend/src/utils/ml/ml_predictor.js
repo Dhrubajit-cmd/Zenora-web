@@ -19,7 +19,8 @@ const KEYWORD_RULES = {
   "food_and_drink": [
     "zomato", "swiggy", "starbucks", "restaurant", "cafe", "coffee", "lunch", "dinner", "grocery", "groceries",
     "supermarket", "food", "tea", "burger", "pizza", "mcdonalds", "kfc", "coke", "bar", "pub", "brewery", "eats",
-    "bakery", "sweet", "snack", "dining", "swiggyinstamart", "blinkit", "zepto", "milk", "vegetables", "fruits"
+    "bakery", "sweet", "snack", "dining", "swiggyinstamart", "blinkit", "zepto", "milk", "vegetables", "fruits",
+    "instamart", "bigbasket", "bbdaily", "dominos", "burger king", "pizzahut", "dunkin", "subway", "baskin robbins"
   ],
   "rent": [
     "rent", "landlord", "flat", "apartment", "pg", "hostel", "lease", "accommodation", "maintenance", "flat rent"
@@ -27,7 +28,7 @@ const KEYWORD_RULES = {
   "utilities": [
     "bill", "electricity", "water", "gas", "wifi", "internet", "broadband", "recharge", "phone bill", "jio", 
     "airtel", "postpaid", "prepaid", "dth", "cable", "power", "electricity bill", "water bill", "broadband bill",
-    "act fibernet", "tata play", "dish tv"
+    "act fibernet", "tata play", "dish tv", "insurance", "lic", "policybazaar"
   ],
   "entertainment": [
     "netflix", "spotify", "prime video", "movie", "cinema", "theatre", "hotstar", "game", "gaming", "steam",
@@ -35,7 +36,8 @@ const KEYWORD_RULES = {
   ],
   "travel": [
     "uber", "ola", "rapido", "cab", "taxi", "flight", "indigo", "airasia", "irctc", "train", "ticket", "travel",
-    "holiday", "hotel", "makemytrip", "mmt", "fuel", "petrol", "diesel", "metro", "bus", "zoomcar", "goibibo"
+    "holiday", "hotel", "makemytrip", "mmt", "fuel", "petrol", "diesel", "metro", "bus", "zoomcar", "goibibo",
+    "shell", "hpcl", "bpcl", "iocl", "easemytrip", "yatra", "abhibus", "redbus", "fastag"
   ],
   "health_and_fitness": [
     "gym", "workout", "hospital", "doctor", "medicine", "pharmacy", "medical", "dentist", "health", "insurance",
@@ -43,7 +45,8 @@ const KEYWORD_RULES = {
   ],
   "shopping": [
     "amazon", "flipkart", "myntra", "zara", "clothing", "shoes", "mall", "electronics", "gadget", "iphone", 
-    "laptop", "clothes", "fashion", "shopping", "store", "superstore", "h&m", "uniqlo", "pantaloons", "ajio"
+    "laptop", "clothes", "fashion", "shopping", "store", "superstore", "h&m", "uniqlo", "pantaloons", "ajio",
+    "meesho", "nykaa", "lenskart", "decathlon", "croma", "reliance digital", "jiomart"
   ]
 };
 
