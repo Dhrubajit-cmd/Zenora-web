@@ -110,7 +110,7 @@ func main() {
 	mux.HandleFunc("/api/ml/override", middleware.AuthMiddleware(handler.CreateOverrideHandler))
 
 	// Dummy Cronjob :
-	mux.HandleFunc("/api/cron", handler.CronjobHandler)
+	mux.HandleFunc("/api/cronjob", handler.CronJobHandler)
 
 	//  Server start
 	http.ListenAndServe(":"+port, enableCORS(middleware.RateLimitMiddleware(mux)))
