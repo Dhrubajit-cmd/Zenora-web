@@ -69,30 +69,42 @@ function StatementUpload({ onSaveComplete, onClose }) {
 
         let headerRowIndex = 0;
         let headers = [];
+        let maxScore = 0;
 
-        // Search first 6 rows for row containing descriptions and amounts
-        for (let i = 0; i < Math.min(6, rawRows.length); i++) {
+        // Scan first 25 rows to find the most probable header row using a scoring model
+        for (let i = 0; i < Math.min(25, rawRows.length); i++) {
           const row = rawRows[i];
           if (!row) continue;
-          const hasDesc = row.some(cell => typeof cell === "string" && /desc|particular|merchant|detail|payee|narrative/i.test(cell));
-          const hasAmount = row.some(cell => typeof cell === "string" && /amount|value|debit|credit/i.test(cell));
-          if (hasDesc && hasAmount) {
+
+          const hasDate = row.some(cell => /date|time|val.*dt|txn.*dt|post.*dt|booking.*dt/i.test(String(cell || "")));
+          const hasDesc = row.some(cell => /desc|particular|merchant|detail|payee|narrative|remark|txn.*desc|transaction|narratives/i.test(String(cell || "")));
+          const hasAmt = row.some(cell => /amount|value|spent|outflow|inflow|charge|price|payment/i.test(String(cell || "")));
+          const hasDebOrCred = row.some(cell => /debit|credit|withdrawal|deposit|dr\b|cr\b/i.test(String(cell || "")));
+
+          let score = 0;
+          if (hasDate) score += 1.0;
+          if (hasDesc) score += 1.5;
+          if (hasAmt || hasDebOrCred) score += 1.5;
+
+          if (score > maxScore && score >= 2.0) {
+            maxScore = score;
             headerRowIndex = i;
             headers = row.map(h => String(h || "").toLowerCase().trim());
-            break;
           }
         }
 
-        if (headers.length === 0) {
-          // Fallback to first row
+        // Fallback if no high-probability header row detected
+        if (headers.length === 0 && rawRows.length > 0) {
           headers = rawRows[0].map(h => String(h || "").toLowerCase().trim());
         }
 
-        const dateIdx = headers.findIndex(h => /date|time/i.test(h));
-        const descIdx = headers.findIndex(h => /desc|particular|merchant|detail|payee|narrative/i.test(h));
-        const amountIdx = headers.findIndex(h => /amount|value|debit|credit/i.test(h));
+        const dateIdx = headers.findIndex(h => /date|time|val.*dt|txn.*dt|post.*dt|booking.*dt/i.test(h));
+        const descIdx = headers.findIndex(h => /desc|particular|merchant|detail|payee|narrative|remark|txn.*desc|transaction|narratives/i.test(h));
+        const amountIdx = headers.findIndex(h => /amount|value|spent|outflow|inflow|charge|price|payment/i.test(h));
+        const debitIdx = headers.findIndex(h => /debit|withdrawal|dr\b/i.test(h));
+        const creditIdx = headers.findIndex(h => /credit|deposit|cr\b/i.test(h));
 
-        if (descIdx === -1 || amountIdx === -1) {
+        if (descIdx === -1 || (amountIdx === -1 && debitIdx === -1 && creditIdx === -1)) {
           toast.error("Could not auto-detect Description or Amount columns. Please make sure headers exist in the file.");
           return;
         }
@@ -103,8 +115,23 @@ function StatementUpload({ onSaveComplete, onClose }) {
           if (!row || row.length === 0) continue;
 
           const rawDate = dateIdx !== -1 ? row[dateIdx] : null;
-          const rawDesc = row[descIdx];
-          const rawAmount = row[amountIdx];
+          const rawDesc = descIdx !== -1 ? row[descIdx] : null;
+          
+          let rawAmount = null;
+          if (amountIdx !== -1) {
+            const val = String(row[amountIdx] || "").replace(/[^0-9.-]/g, "");
+            rawAmount = parseFloat(val);
+          } else {
+            const debStr = debitIdx !== -1 ? String(row[debitIdx] || "").replace(/[^0-9.-]/g, "") : "";
+            const credStr = creditIdx !== -1 ? String(row[creditIdx] || "").replace(/[^0-9.-]/g, "") : "";
+            const debVal = parseFloat(debStr);
+            const credVal = parseFloat(credStr);
+            if (!isNaN(debVal) && debVal !== 0) {
+              rawAmount = debVal;
+            } else if (!isNaN(credVal) && credVal !== 0) {
+              rawAmount = credVal;
+            }
+          }
 
           if (!rawDesc || rawAmount === undefined || rawAmount === null || isNaN(parseFloat(rawAmount))) {
             continue;
