@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"strings"
-	"time"
+	"personal-finance-backend/internal/dashboard"
 	"personal-finance-backend/internal/middleware"
 	"personal-finance-backend/internal/models"
 	"personal-finance-backend/internal/repository"
-	"personal-finance-backend/internal/dashboard"
+	"strings"
+	"time"
 )
 
 func OnboardingBatchHandler(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +100,7 @@ func CreateExpenseHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create expense", http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{"message":"Expense created successfully"}`))
@@ -164,6 +165,7 @@ func CreateIncomesBatchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := repository.CreateIncomesBatch(incomes); err != nil {
+		log.Printf("Error creating incomes batch: %v", err)
 		http.Error(w, "Failed to create incomes batch", http.StatusInternalServerError)
 		return
 	}
@@ -268,7 +270,7 @@ func GetActivityHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := r.Context().Value(middleware.UserIDKey).(int)
 
-	// Fetch up to 100 recent activities for the dedicated page 
+	// Fetch up to 100 recent activities for the dedicated page
 	// NOTE: Requires importing personal-finance-backend/internal/dashboard
 	// Actually to avoid circular imports, I should probably copy the Dashboard import to the top if needed.
 	// We'll see.
@@ -471,4 +473,3 @@ func EmailReportHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message":"Report emailed successfully"}`))
 }
-
