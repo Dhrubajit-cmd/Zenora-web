@@ -77,7 +77,7 @@ function cleanTransactionDescription(desc) {
     const parts = clean.split("-");
     for (let j = 1; j < parts.length; j++) {
       const part = parts[j].trim();
-      if (prat && !/^\d+$/.test(part) && part.toUpperCase() !== "UPI" && !part.include("@")) {
+      if (part && !/^\d+$/.test(part) && part.toUpperCase() !== "UPI" && !part.includes("@")) {
         return part;
       }
     }
