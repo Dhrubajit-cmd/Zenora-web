@@ -5,7 +5,7 @@ import { toast } from "../../utils/toast";
 
 function parseTransactionDate(rawDate) {
   if (!rawDate) return new Date();
-  
+
   if (typeof rawDate === "number") {
     const utcDays = Math.floor(rawDate - 25569);
     const utcValue = utcDays * 86400;
@@ -53,6 +53,45 @@ function parseTransactionDate(rawDate) {
   }
 
   return new Date();
+}
+
+function cleanTransactionDescription(desc) {
+  if (!desc) return "";
+  let clean = String(desc).trim();
+
+  // 1. Handle the common UPI formats : 
+  if (clean.toUpperCase().startsWith("UPI/")) {
+    const parts = clean.split("/");
+    // Loop through parts starting from index 1 to find the first non-numeric name : 
+    for (let j = 1; j < parts.length; j++) {
+      const part = parts[j].trim();
+      // Skip empty parts, purely numeric transaction IDs, the word "UPI", or VPA handles with "@": 
+      if (part && !/^\d+$/.test(part) && part.toUpperCase() !== "UPI" && !part.includes("@")) {
+        return part;
+      }
+    }
+  }
+
+  // 2. Handle dash-seaparated UPI formats : 
+  if (clean.toUpperCase().startsWith("UPI-")) {
+    const parts = clean.split("-");
+    for (let j = 1; j < parts.length; j++) {
+      const part = parts[j].trim();
+      if (prat && !/^\d+$/.test(part) && part.toUpperCase() !== "UPI" && !part.include("@")) {
+        return part;
+      }
+    }
+  }
+
+  // 3. Handle POS transactions: 
+  if (clean.toUpperCase().startsWith("POS/")) {
+    const parts = clean.split("/");
+    if (parts.length > 1) {
+      return parts[1].trim();
+    }
+  }
+
+  return clean;
 }
 
 const CATEGORY_LABELS = {
@@ -236,7 +275,7 @@ function StatementUpload({ onSaveComplete, onClose }) {
 
           const transactionDate = parseTransactionDate(rawDate);
 
-          const description = String(rawDesc).trim();
+          const description = cleanTransactionDescription(rawDesc);
           const amount = Math.abs(parseFloat(rawAmount));
           const category = classifyExpense(description);
 
